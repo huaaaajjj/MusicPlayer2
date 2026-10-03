@@ -460,6 +460,9 @@
     <ClInclude Include="ListCtrlEx.h" />
     <ClInclude Include="LyricDownloadCommon.h" />
     <ClInclude Include="LyricBatchDownloadDlg.h" />
+    <ClInclude Include="AiClient.h" />
+    <ClInclude Include="AiSettingDlg.h" />
+    <ClInclude Include="AiSongOrganizeDlg.h" />
     <ClInclude Include="LyricDownloadDlg.h" />
     <ClInclude Include="LyricEditDlg.h" />
     <ClInclude Include="MiniModeDlg.h" />
@@ -709,6 +712,9 @@
     <ClCompile Include="ListCtrlEx.cpp" />
     <ClCompile Include="LyricDownloadCommon.cpp" />
     <ClCompile Include="LyricBatchDownloadDlg.cpp" />
+    <ClCompile Include="AiClient.cpp" />
+    <ClCompile Include="AiSettingDlg.cpp" />
+    <ClCompile Include="AiSongOrganizeDlg.cpp" />
     <ClCompile Include="LyricDownloadDlg.cpp" />
     <ClCompile Include="LyricEditDlg.cpp" />
     <ClCompile Include="MiniModeDlg.cpp" />

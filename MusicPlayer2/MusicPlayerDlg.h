@@ -17,6 +17,7 @@
 #include "FilePathHelper.h"
 #include "CoverDownloadDlg.h"
 #include "FormatConvertDlg.h"
+#include "AiSongOrganizeDlg.h"
 #include "CNotifyIcon.h"
 #include "StaticEx.h"
 #include "CMainDialogBase.h"
@@ -143,6 +144,7 @@ protected:
     CMediaLibDlg* m_pMediaLibDlg;       //媒体库对话框（非模态对话框）
     CSoundEffectDlg* m_pSoundEffecDlg;      //音效设定对话框（非模态对话框）
     CFormatConvertDlg* m_pFormatConvertDlg;     //格式转换对话框（非模态对话框）
+    CAiSongOrganizeDlg* m_pAiSongOrganizeDlg = nullptr;   //AI自动整理对话框（非模态对话框）
     CFloatPlaylistDlg* m_pFloatPlaylistDlg;     //浮动播放列表对话框
     CPoint m_float_playlist_pos{ INT_MAX, INT_MAX };                //浮动播放列表的位置
 
@@ -388,6 +390,7 @@ public:
     afx_msg void OnEditLyric();
     afx_msg void OnDownloadLyric();
     afx_msg void OnLyricBatchDownload();
+    afx_msg void OnToolAiOrganize();
     afx_msg void OnDeleteLyric();
     afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
     afx_msg void OnMouseMove(UINT nFlags, CPoint point);

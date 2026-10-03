@@ -561,6 +561,15 @@
     <ClInclude Include="LyricBatchDownloadDlg.h">
       <Filter>对话框类\歌词下载对话框</Filter>
     </ClInclude>
+    <ClInclude Include="AiClient.h">
+      <Filter>公共的类</Filter>
+    </ClInclude>
+    <ClInclude Include="AiSettingDlg.h">
+      <Filter>对话框类\AI自动整理对话框</Filter>
+    </ClInclude>
+    <ClInclude Include="AiSongOrganizeDlg.h">
+      <Filter>对话框类\AI自动整理对话框</Filter>
+    </ClInclude>
     <ClInclude Include="EqualizerDlg.h">
       <Filter>对话框类\Sound Effect Dialog</Filter>
     </ClInclude>
@@ -1294,6 +1303,15 @@
     </ClCompile>
     <ClCompile Include="LyricBatchDownloadDlg.cpp">
       <Filter>对话框类\歌词下载对话框</Filter>
+    </ClCompile>
+    <ClCompile Include="AiClient.cpp">
+      <Filter>公共的类</Filter>
+    </ClCompile>
+    <ClCompile Include="AiSettingDlg.cpp">
+      <Filter>对话框类\AI自动整理对话框</Filter>
+    </ClCompile>
+    <ClCompile Include="AiSongOrganizeDlg.cpp">
+      <Filter>对话框类\AI自动整理对话框</Filter>
     </ClCompile>
     <ClCompile Include="EqualizerDlg.cpp">
       <Filter>对话框类\Sound Effect Dialog</Filter>

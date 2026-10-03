@@ -143,6 +143,10 @@ bool CListCtrlEx::SetRowHeight(int height, int left_space)
         {
             m_row_height = height;
             SetImageList(&imgList, LVSIL_SMALL);
+            //列表控件已接管该图像列表句柄，必须解除局部对象的关联，否则imgList析构时会销毁它，
+            //使控件持有已销毁的LVSIL_SMALL图像列表。带复选框的列表绘制复选框时会用到图像列表，
+            //届时会出现列表不断重绘、以及弹出的模态对话框不可见等异常
+            imgList.Detach();
             return true;
         }
     }

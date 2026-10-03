@@ -109,6 +109,10 @@ int CInternetCommon::SendHttpRequest(bool post, const wstring & str_url, wstring
     theApp.WriteLog(log_info, NonCategorizedSettingData::LT_NORMAL);
 
 	CInternetSession session;
+    //设置网络超时，防止在异常网络环境（如代理失速）下无限等待
+    session.SetOption(INTERNET_OPTION_CONNECT_TIMEOUT, 15000);
+    session.SetOption(INTERNET_OPTION_SEND_TIMEOUT, 15000);
+    session.SetOption(INTERNET_OPTION_RECEIVE_TIMEOUT, 30000);
 	CHttpConnection* pConnection{};
 	CHttpFile* pFile{};
 	CString strServer;

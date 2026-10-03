@@ -8,6 +8,9 @@
 #include "COSUPlayerHelper.h"
 #include "IniHelper.h"
 #include "SongInfoHelper.h"
+#include "MusicPlayerCmdHelper.h"
+#include "Lyric.h"
+#include "AudioTag.h"
 
 
 // CLyricBatchDownloadDlg 对话框
@@ -60,6 +63,12 @@ bool CLyricBatchDownloadDlg::InitializeControls()
     SetDlgItemTextW(IDC_INFO_STATIC, temp.c_str());
     temp = theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_DL_START");
     SetDlgItemTextW(IDC_START_DOWNLOAD, temp.c_str());
+    temp = theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_EMBED_START");
+    SetDlgItemTextW(IDC_LYRIC_BDL_EMBED, temp.c_str());
+    temp = theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_COVER_START");
+    SetDlgItemTextW(IDC_LYRIC_BDL_COVER, temp.c_str());
+    temp = theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_EMBED_COVER_START");
+    SetDlgItemTextW(IDC_LYRIC_BDL_EMBED_COVER, temp.c_str());
     // IDCANCEL
 
     RepositionTextBasedControls({
@@ -99,6 +108,9 @@ void CLyricBatchDownloadDlg::EnableControls(bool enable)
     else
         GetDlgItem(IDC_SAVE_TO_LYRIC_FOLDER)->EnableWindow(enable);
     GetDlgItem(IDC_START_DOWNLOAD)->EnableWindow(enable);
+    GetDlgItem(IDC_LYRIC_BDL_EMBED)->EnableWindow(enable);
+    GetDlgItem(IDC_LYRIC_BDL_COVER)->EnableWindow(enable);
+    GetDlgItem(IDC_LYRIC_BDL_EMBED_COVER)->EnableWindow(enable);
 }
 
 bool CLyricBatchDownloadDlg::SaveLyric(const wchar_t* path, const wstring& lyric_wcs, CodeType code_type, bool* char_cannot_convert)
@@ -125,6 +137,9 @@ void CLyricBatchDownloadDlg::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CLyricBatchDownloadDlg, CBaseDialog)
     ON_BN_CLICKED(IDC_START_DOWNLOAD, &CLyricBatchDownloadDlg::OnBnClickedStartDownload)
+    ON_BN_CLICKED(IDC_LYRIC_BDL_EMBED, &CLyricBatchDownloadDlg::OnBnClickedEmbedLyric)
+    ON_BN_CLICKED(IDC_LYRIC_BDL_COVER, &CLyricBatchDownloadDlg::OnBnClickedDownloadCover)
+    ON_BN_CLICKED(IDC_LYRIC_BDL_EMBED_COVER, &CLyricBatchDownloadDlg::OnBnClickedEmbedCover)
     ON_BN_CLICKED(IDC_SKIP_EXIST_CHECK, &CLyricBatchDownloadDlg::OnBnClickedSkipExistCheck)
     ON_WM_DESTROY()
     ON_CBN_SELCHANGE(IDC_COMBO1, &CLyricBatchDownloadDlg::OnCbnSelchangeCombo1)
@@ -214,19 +229,55 @@ BOOL CLyricBatchDownloadDlg::OnInitDialog()
 
 void CLyricBatchDownloadDlg::OnBnClickedStartDownload()
 {
-    // TODO: 在此添加控件通知处理程序代码
-    m_progress_bar.ShowWindow(SW_SHOW);
+    StartAction(BatchAction::DownloadLyric);
+}
 
-    //先清除“状态”一列的内容
+
+void CLyricBatchDownloadDlg::OnBnClickedEmbedLyric()
+{
+    StartAction(BatchAction::EmbedLyric);
+}
+
+
+void CLyricBatchDownloadDlg::OnBnClickedDownloadCover()
+{
+    StartAction(BatchAction::DownloadCover);
+}
+
+
+void CLyricBatchDownloadDlg::OnBnClickedEmbedCover()
+{
+    StartAction(BatchAction::EmbedCover);
+}
+
+
+void CLyricBatchDownloadDlg::StartAction(BatchAction action)
+{
+    m_progress_bar.ShowWindow(SW_SHOW);
+    m_progress_bar.SetProgress(0);
+
+    //清除状态列
     for (size_t i{}; i < m_playlist.size(); i++)
-    {
         m_song_list_ctrl.SetItemText(i, 4, _T(""));
+
+    if (action == BatchAction::DownloadLyric)
+        m_downloaded_songs.clear();
+    if (action == BatchAction::EmbedLyric)
+    {
+        CSingleLock lock(&m_cs, TRUE);
+        m_pending_embeds.clear();
+    }
+    if (action == BatchAction::EmbedCover)
+    {
+        CSingleLock lock(&m_cs, TRUE);
+        m_pending_cover_embeds.clear();
     }
 
-    EnableControls(false);		//禁用控件
+    EnableControls(false);
 
-    //设置要向歌词下载工作线程传递的数据
+    m_thread_info = ThreadInfo();
     m_thread_info.hwnd = GetSafeHwnd();
+    m_thread_info.action = action;
     m_thread_info.download_translate = m_download_translate;
     m_thread_info.save_to_song_folder = m_save_to_song_folder;
     m_thread_info.skip_exist = m_skip_exist;
@@ -235,9 +286,12 @@ void CLyricBatchDownloadDlg::OnBnClickedStartDownload()
     m_thread_info.static_ctrl = &m_info_static;
     m_thread_info.progress_bar = &m_progress_bar;
     m_thread_info.playlist = &m_playlist;
-    theApp.m_batch_download_dialog_exit = false;
+    m_thread_info.downloaded_songs = &m_downloaded_songs;
+    m_thread_info.pending_embeds = &m_pending_embeds;
+    m_thread_info.pending_cover_embeds = &m_pending_cover_embeds;
+    m_thread_info.cs = &m_cs;
 
-    //创建歌词批量下载的工作线程
+    theApp.m_batch_download_dialog_exit = false;
     m_pThread = AfxBeginThread(ThreadFunc, &m_thread_info);
 }
 
@@ -277,11 +331,57 @@ void CLyricBatchDownloadDlg::OnBnClickedDownloadTrasnlateCheck2()
     m_download_translate = (m_download_translate_chk.GetCheck() != 0);
 }
 
+//按批量下载设置取得歌词文件路径
+static wstring GetBatchLyricPath(const SongInfo& song, bool save_to_song_folder)
+{
+    wstring file_name;
+    wstring dir;
+    bool save_to_lyric_folder = (!save_to_song_folder && CCommon::FolderExist(theApp.m_lyric_setting_data.AbsoluteLyricPath()));
+    if (song.is_cue || COSUPlayerHelper::IsOsuFile(song.file_path) || save_to_lyric_folder)
+    {
+        file_name = CSongInfoHelper::GetDisplayStr(song, DF_ARTIST_TITLE);
+        CCommon::FileNameNormalize(file_name);
+        dir = theApp.m_lyric_setting_data.AbsoluteLyricPath();
+    }
+    else
+    {
+        file_name = CFilePathHelper(song.GetFileName()).ReplaceFileExtension(nullptr);
+        dir = CFilePathHelper(song.file_path).GetDir();
+    }
+    return dir + file_name + L".lrc";
+}
+
+//查找歌曲已经存在的本地歌词文件：优先使用媒体库关联歌词，再尝试歌曲目录和歌词目录
+static wstring FindBatchLyricPath(const SongInfo& song, bool save_to_song_folder)
+{
+    SongInfo song_info{ CSongDataManager::GetInstance().GetSongInfo3(song) };
+    if (!song_info.lyric_file.empty() && song_info.lyric_file != NO_LYRIC_STR && CCommon::FileExist(song_info.lyric_file))
+        return song_info.lyric_file;
+
+    wstring path = GetBatchLyricPath(song, save_to_song_folder);
+    if (CCommon::FileExist(path))
+        return path;
+
+    path = GetBatchLyricPath(song, !save_to_song_folder);
+    if (CCommon::FileExist(path))
+        return path;
+
+    return wstring();
+}
+
+
 //工作线程函数
 UINT CLyricBatchDownloadDlg::ThreadFunc(LPVOID lpParam)
 {
     CCommon::SetThreadLanguageList(theApp.m_str_table.GetLanguageTag());
     ThreadInfo* pInfo = (ThreadInfo*)lpParam;
+
+    if (pInfo->action == BatchAction::EmbedLyric)
+        return EmbedLyricThread(pInfo);
+    if (pInfo->action == BatchAction::DownloadCover)
+        return DownloadCoverThread(pInfo);
+    if (pInfo->action == BatchAction::EmbedCover)
+        return EmbedCoverThread(pInfo);
 
     //依次下载列表中每一首歌曲的歌词
     for (size_t i{}; i < pInfo->playlist->size(); i++)
@@ -406,9 +506,10 @@ UINT CLyricBatchDownloadDlg::ThreadFunc(LPVOID lpParam)
         CLyricDownloadCommon::AddLyricTag(lyric_str, down_list[best_matched].id, down_list[best_matched].title, down_list[best_matched].artist, down_list[best_matched].album);
 
         //保存歌词
-        bool char_cannot_convert;
+        bool char_cannot_convert{};
         if (CLyricBatchDownloadDlg::SaveLyric(lyric_path.c_str(), lyric_str, pInfo->save_code, &char_cannot_convert))
         {
+            pInfo->downloaded_songs->insert(cur_song.file_path);
             if (char_cannot_convert)
                 pInfo->list_ctrl->SetItemText(i, 4, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_STATUS_ENCODE_WARNING").c_str());    //char_cannot_convert为true，则说明有无法转换的Unicode字符
             else
@@ -416,7 +517,7 @@ UINT CLyricBatchDownloadDlg::ThreadFunc(LPVOID lpParam)
         }
         else
         {
-            pInfo->list_ctrl->SetItemText(i, 4, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_STATUS_SUCCEEDED").c_str());
+            pInfo->list_ctrl->SetItemText(i, 4, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_STATUS_FILE_WRITE_FAILED").c_str());
         }
 
         if (pInfo->download_translate)
@@ -434,14 +535,425 @@ UINT CLyricBatchDownloadDlg::ThreadFunc(LPVOID lpParam)
 }
 
 
+UINT CLyricBatchDownloadDlg::EmbedLyricThread(ThreadInfo* pInfo)
+{
+    CCommon::SetThreadLanguageList(theApp.m_str_table.GetLanguageTag());
+
+    for (size_t i{}; i < pInfo->playlist->size(); i++)
+    {
+        if (theApp.m_batch_download_dialog_exit)
+            return 0;
+        int percent = static_cast<int>(i * 100 / pInfo->playlist->size());
+        wstring info = theApp.m_str_table.LoadTextFormat(L"TXT_LYRIC_BDL_INFO_EMBEDDING", { percent });
+        pInfo->static_ctrl->SetWindowText(info.c_str());
+        pInfo->progress_bar->SetProgress(percent);
+
+        const SongInfo& song = pInfo->playlist->at(i);
+        pInfo->list_ctrl->SetItemText(i, 4, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_STATUS_EMBEDDING").c_str());
+        pInfo->list_ctrl->EnsureVisible(i, FALSE);
+
+        if (song.is_cue || COSUPlayerHelper::IsOsuFile(song.file_path))
+        {
+            pInfo->list_ctrl->SetItemText(i, 4, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_STATUS_SKIPPED").c_str());
+            continue;
+        }
+
+        CFilePathHelper file_path(song.file_path);
+        wstring ext = file_path.GetFileExtension();
+        if (!CAudioTag::IsFileTypeLyricWriteSupport(ext))
+        {
+            pInfo->list_ctrl->SetItemText(i, 4, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_STATUS_EMBED_UNSUPPORTED").c_str());
+            continue;
+        }
+
+        wstring lyric_path = FindBatchLyricPath(song, pInfo->save_to_song_folder);
+        if (lyric_path.empty())
+        {
+            pInfo->list_ctrl->SetItemText(i, 4, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_STATUS_EMBED_NO_LRC").c_str());
+            continue;
+        }
+
+        CLyrics lyrics(lyric_path);
+        wstring lyric_text = lyrics.GetLyricsString();
+        if (lyric_text.empty())
+        {
+            pInfo->list_ctrl->SetItemText(i, 4, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_STATUS_EMBED_NO_LRC").c_str());
+            continue;
+        }
+
+        SongInfo song_info{ CSongDataManager::GetInstance().GetSongInfo3(song) };
+        CAudioTag audio_tag(song_info);
+        bool has_inner_lyric = !audio_tag.GetAudioLyric().empty();
+        bool newly_downloaded = pInfo->downloaded_songs != nullptr && pInfo->downloaded_songs->count(song.file_path) != 0;
+
+        if (has_inner_lyric && !newly_downloaded)
+        {
+            pInfo->list_ctrl->SetItemText(i, 4, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_STATUS_EMBED_SKIPPED_EXIST").c_str());
+            continue;
+        }
+
+        if (song.file_path == CPlayer::GetInstance().GetCurrentSongInfo().file_path)
+        {
+            PendingEmbed pending;
+            pending.row = static_cast<int>(i);
+            pending.song_info = song_info;
+            pending.lyric = lyric_text;
+            pending.lyric_path = lyric_path;
+            {
+                CSingleLock lock(pInfo->cs, TRUE);
+                pInfo->pending_embeds->push_back(pending);
+            }
+            pInfo->list_ctrl->SetItemText(i, 4, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_STATUS_EMBED_PENDING").c_str());
+            continue;
+        }
+
+        if (audio_tag.WriteAudioLyric(lyric_text))
+        {
+            song_info.lyric_file = lyric_path;
+            CSongDataManager::GetInstance().AddItem(song_info);
+            pInfo->list_ctrl->SetItemText(i, 4, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_STATUS_EMBED_SUCCEEDED").c_str());
+        }
+        else
+        {
+            pInfo->list_ctrl->SetItemText(i, 4, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_STATUS_EMBED_FAILED").c_str());
+        }
+    }
+
+    ::PostMessage(pInfo->hwnd, WM_BATCH_DOWNLOAD_COMPLATE, 0, 0);
+    return 0;
+}
+
+
+//下载专辑封面文件（带超时控制，避免单张封面卡住整个批次）
+static bool DownloadCoverFile(const wstring& url, const wstring& save_path)
+{
+    try
+    {
+        CInternetSession session;
+        session.SetOption(INTERNET_OPTION_CONNECT_TIMEOUT, 15000);
+        session.SetOption(INTERNET_OPTION_SEND_TIMEOUT, 15000);
+        session.SetOption(INTERNET_OPTION_RECEIVE_TIMEOUT, 30000);
+        CStdioFile* pFile = session.OpenURL(url.c_str(), 1, INTERNET_FLAG_TRANSFER_BINARY | INTERNET_FLAG_RELOAD);
+        if (pFile == nullptr)
+            return false;
+        ofstream out_file(save_path.c_str(), std::ios::binary);
+        bool ok = !out_file.fail();
+        char buff[8192];
+        UINT read_size;
+        while (ok && (read_size = pFile->Read(buff, sizeof(buff))) > 0)
+        {
+            out_file.write(buff, read_size);
+            ok = !out_file.fail();
+        }
+        out_file.close();
+        pFile->Close();
+        delete pFile;
+        return ok;
+    }
+    catch (CInternetException* e)
+    {
+        e->Delete();
+        return false;
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+
+
+UINT CLyricBatchDownloadDlg::DownloadCoverThread(ThreadInfo* pInfo)
+{
+    CCommon::SetThreadLanguageList(theApp.m_str_table.GetLanguageTag());
+    CMusicPlayerCmdHelper helper;
+
+    for (size_t i{}; i < pInfo->playlist->size(); i++)
+    {
+        if (theApp.m_batch_download_dialog_exit)
+            return 0;
+        int percent = static_cast<int>(i * 100 / pInfo->playlist->size());
+        wstring info = theApp.m_str_table.LoadTextFormat(L"TXT_LYRIC_BDL_INFO_COVER_DOWNLOADING", { percent });
+        pInfo->static_ctrl->SetWindowText(info.c_str());
+        pInfo->progress_bar->SetProgress(percent);
+
+        const SongInfo& song = pInfo->playlist->at(i);
+        pInfo->list_ctrl->SetItemText(i, 4, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_STATUS_DOWNLOADING").c_str());
+        pInfo->list_ctrl->EnsureVisible(i, FALSE);
+
+        if (song.is_cue || COSUPlayerHelper::IsOsuFile(song.file_path) || CCommon::IsURL(song.file_path))
+        {
+            pInfo->list_ctrl->SetItemText(i, 4, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_STATUS_SKIPPED").c_str());
+            continue;
+        }
+
+        if (!helper.SearchAlbumCover(song).empty())
+        {
+            pInfo->list_ctrl->SetItemText(i, 4, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_STATUS_COVER_EXIST").c_str());
+            continue;
+        }
+
+        SongInfo song_info{ CSongDataManager::GetInstance().GetSongInfo3(song) };
+        wstring title = song_info.title;
+        wstring artist = song_info.artist;
+        wstring album = song_info.album;
+        if (theApp.m_str_table.LoadText(L"TXT_EMPTY_TITLE") == title) title.clear();
+        if (theApp.m_str_table.LoadText(L"TXT_EMPTY_ARTIST") == artist) artist.clear();
+        if (theApp.m_str_table.LoadText(L"TXT_EMPTY_ALBUM") == album) album.clear();
+
+        DownloadResult download_result;
+        CLyricDownloadCommon::ItemInfo item = theApp.GetLyricDownload()->SearchSongAndGetMatched(title, artist, album, song.GetFileName(), false, &download_result);
+        if (download_result != DR_SUCCESS || item.id.empty())
+        {
+            if (download_result == DR_NETWORK_ERROR)
+                pInfo->list_ctrl->SetItemText(i, 4, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_STATUS_NETWORK_FAILED").c_str());
+            else
+                pInfo->list_ctrl->SetItemText(i, 4, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_STATUS_COVER_NO_MATCH").c_str());
+            continue;
+        }
+
+        wstring cover_url = theApp.GetLyricDownload()->GetAlbumCoverURL(item.id);
+        if (cover_url.empty())
+        {
+            pInfo->list_ctrl->SetItemText(i, 4, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_STATUS_COVER_FAILED").c_str());
+            continue;
+        }
+
+        wstring cover_name;
+        if (!item.album.empty() && item.album == song.album)
+            cover_name = item.album;
+        else
+            cover_name = CFilePathHelper(song.GetFileName()).ReplaceFileExtension(nullptr);
+        CCommon::FileNameNormalize(cover_name);
+        if (cover_name.empty())
+            cover_name = L"cover";
+
+        CFilePathHelper url_path(cover_url);
+        wstring cover_ext = url_path.GetFileExtension(false, true);
+        if (cover_ext.empty())
+            cover_ext = L".jpg";
+        bool save_to_album_folder = (!theApp.m_general_setting_data.save_album_to_song_folder && CCommon::FolderExist(theApp.m_app_setting_data.AbsoluteAlbumCoverPath()));
+        wstring cover_dir = save_to_album_folder ? theApp.m_app_setting_data.AbsoluteAlbumCoverPath() : CFilePathHelper(song.file_path).GetDir();
+        wstring cover_path = cover_dir + cover_name + cover_ext;
+        if (CCommon::FileExist(cover_path))
+            ::DeleteFile(cover_path.c_str());
+
+        bool downloaded = DownloadCoverFile(cover_url, cover_path);
+        if (downloaded && CCommon::FileExist(cover_path))
+        {
+            if (!save_to_album_folder)
+                ::SetFileAttributes(cover_path.c_str(), FILE_ATTRIBUTE_HIDDEN);
+            pInfo->list_ctrl->SetItemText(i, 4, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_STATUS_COVER_SUCCEEDED").c_str());
+        }
+        else
+        {
+            pInfo->list_ctrl->SetItemText(i, 4, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_STATUS_COVER_FAILED").c_str());
+        }
+    }
+
+    ::PostMessage(pInfo->hwnd, WM_BATCH_DOWNLOAD_COMPLATE, 0, 0);
+    return 0;
+}
+
+
+UINT CLyricBatchDownloadDlg::EmbedCoverThread(ThreadInfo* pInfo)
+{
+    CCommon::SetThreadLanguageList(theApp.m_str_table.GetLanguageTag());
+    CMusicPlayerCmdHelper helper;
+
+    for (size_t i{}; i < pInfo->playlist->size(); i++)
+    {
+        if (theApp.m_batch_download_dialog_exit)
+            return 0;
+        int percent = static_cast<int>(i * 100 / pInfo->playlist->size());
+        wstring info = theApp.m_str_table.LoadTextFormat(L"TXT_LYRIC_BDL_INFO_COVER_EMBEDDING", { percent });
+        pInfo->static_ctrl->SetWindowText(info.c_str());
+        pInfo->progress_bar->SetProgress(percent);
+
+        const SongInfo& song = pInfo->playlist->at(i);
+        pInfo->list_ctrl->SetItemText(i, 4, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_STATUS_COVER_EMBEDDING").c_str());
+        pInfo->list_ctrl->EnsureVisible(i, FALSE);
+
+        if (song.is_cue || COSUPlayerHelper::IsOsuFile(song.file_path) || CCommon::IsURL(song.file_path))
+        {
+            pInfo->list_ctrl->SetItemText(i, 4, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_STATUS_SKIPPED").c_str());
+            continue;
+        }
+
+        CFilePathHelper file_path(song.file_path);
+        wstring ext = file_path.GetFileExtension();
+        if (!CAudioTag::IsFileTypeCoverWriteSupport(ext))
+        {
+            pInfo->list_ctrl->SetItemText(i, 4, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_STATUS_COVER_EMBED_UNSUPPORTED").c_str());
+            continue;
+        }
+
+        wstring album_cover_path = helper.SearchAlbumCover(song);
+        if (album_cover_path.empty())
+        {
+            pInfo->list_ctrl->SetItemText(i, 4, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_STATUS_COVER_EMBED_NO_COVER").c_str());
+            continue;
+        }
+
+        SongInfo song_info{ CSongDataManager::GetInstance().GetSongInfo3(song) };
+        if (song.file_path == CPlayer::GetInstance().GetCurrentSongInfo().file_path)
+        {
+            PendingCoverEmbed pending;
+            pending.row = static_cast<int>(i);
+            pending.song_info = song_info;
+            pending.cover_path = album_cover_path;
+            {
+                CSingleLock lock(pInfo->cs, TRUE);
+                pInfo->pending_cover_embeds->push_back(pending);
+            }
+            pInfo->list_ctrl->SetItemText(i, 4, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_STATUS_COVER_EMBED_PENDING").c_str());
+            continue;
+        }
+
+        CAudioTag audio_tag(song_info);
+        if (audio_tag.WriteAlbumCover(album_cover_path))
+        {
+            pInfo->list_ctrl->SetItemText(i, 4, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_STATUS_COVER_EMBED_SUCCEEDED").c_str());
+        }
+        else
+        {
+            pInfo->list_ctrl->SetItemText(i, 4, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_STATUS_COVER_EMBED_FAILED").c_str());
+        }
+    }
+
+    ::PostMessage(pInfo->hwnd, WM_BATCH_DOWNLOAD_COMPLATE, 0, 0);
+    return 0;
+}
+
+
+void CLyricBatchDownloadDlg::FlushPendingEmbeds()
+{
+    vector<PendingEmbed> pending_embeds;
+    {
+        CSingleLock lock(&m_cs, TRUE);
+        pending_embeds.swap(m_pending_embeds);
+    }
+
+    for (PendingEmbed& pending : pending_embeds)
+    {
+        bool is_current_song = (pending.song_info.file_path == CPlayer::GetInstance().GetCurrentSongInfo().file_path);
+        bool write_ok = false;
+
+        auto do_write = [&]() {
+            CAudioTag audio_tag(pending.song_info);
+            return audio_tag.WriteAudioLyric(pending.lyric);
+        };
+
+        if (is_current_song)
+        {
+            CPlayer::ReOpen reopen(true);
+            if (!reopen.IsLockSuccess())
+            {
+                {
+                    CSingleLock lock(&m_cs, TRUE);
+                    m_pending_embeds.push_back(pending);
+                }
+                if (::IsWindow(GetSafeHwnd()) && pending.row >= 0)
+                    m_song_list_ctrl.SetItemText(pending.row, 4, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_STATUS_EMBED_FILE_LOCKED").c_str());
+                continue;
+            }
+            write_ok = do_write();
+        }
+        else
+        {
+            write_ok = do_write();
+        }
+
+        if (write_ok)
+        {
+            SongInfo song_info = pending.song_info;
+            song_info.lyric_file = pending.lyric_path;
+            CSongDataManager::GetInstance().AddItem(song_info);
+        }
+
+        if (::IsWindow(GetSafeHwnd()) && pending.row >= 0)
+            m_song_list_ctrl.SetItemText(pending.row, 4,
+                theApp.m_str_table.LoadText(write_ok ? L"TXT_LYRIC_BDL_STATUS_EMBED_SUCCEEDED" : L"TXT_LYRIC_BDL_STATUS_EMBED_FAILED").c_str());
+    }
+}
+
+
+void CLyricBatchDownloadDlg::FlushPendingCoverEmbeds()
+{
+    vector<PendingCoverEmbed> pending_items;
+    {
+        CSingleLock lock(&m_cs, TRUE);
+        pending_items.swap(m_pending_cover_embeds);
+    }
+
+    for (PendingCoverEmbed& pending : pending_items)
+    {
+        bool is_current_song = (pending.song_info.file_path == CPlayer::GetInstance().GetCurrentSongInfo().file_path);
+        bool write_ok = false;
+
+        auto do_write = [&]() {
+            CAudioTag audio_tag(pending.song_info);
+            return audio_tag.WriteAlbumCover(pending.cover_path);
+        };
+
+        if (is_current_song)
+        {
+            CPlayer::ReOpen reopen(true);
+            if (!reopen.IsLockSuccess())
+            {
+                {
+                    CSingleLock lock(&m_cs, TRUE);
+                    m_pending_cover_embeds.push_back(pending);
+                }
+                if (::IsWindow(GetSafeHwnd()) && pending.row >= 0)
+                    m_song_list_ctrl.SetItemText(pending.row, 4, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_STATUS_COVER_EMBED_FILE_LOCKED").c_str());
+                continue;
+            }
+            write_ok = do_write();
+        }
+        else
+        {
+            write_ok = do_write();
+        }
+
+        if (::IsWindow(GetSafeHwnd()) && pending.row >= 0)
+            m_song_list_ctrl.SetItemText(pending.row, 4,
+                theApp.m_str_table.LoadText(write_ok ? L"TXT_LYRIC_BDL_STATUS_COVER_EMBED_SUCCEEDED" : L"TXT_LYRIC_BDL_STATUS_COVER_EMBED_FAILED").c_str());
+    }
+}
+
+
 afx_msg LRESULT CLyricBatchDownloadDlg::OnBatchDownloadComplate(WPARAM wParam, LPARAM lParam)
 {
-    SetDlgItemText(IDC_INFO_STATIC, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_INFO_COMPLETE").c_str());
-    //下载完成后重新载入歌词
-    CPlayer::GetInstance().SearchLyrics(true);
-    CPlayer::GetInstance().IniLyrics();
-    EnableControls(true);		//启用控件
+    m_pThread = nullptr;
     m_progress_bar.SetProgress(100);
+    EnableControls(true);
+
+    if (m_thread_info.action == BatchAction::EmbedLyric)
+    {
+        FlushPendingEmbeds();
+        SetDlgItemText(IDC_INFO_STATIC, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_INFO_EMBED_COMPLETE").c_str());
+        CPlayer::GetInstance().SearchLyrics(true);
+        CPlayer::GetInstance().IniLyrics();
+    }
+    else if (m_thread_info.action == BatchAction::DownloadCover)
+    {
+        SetDlgItemText(IDC_INFO_STATIC, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_INFO_COVER_COMPLETE").c_str());
+        CPlayer::GetInstance().SearchOutAlbumCover();
+        CPlayer::GetInstance().AlbumCoverGaussBlur();
+    }
+    else if (m_thread_info.action == BatchAction::EmbedCover)
+    {
+        FlushPendingCoverEmbeds();
+        SetDlgItemText(IDC_INFO_STATIC, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_INFO_COVER_EMBED_COMPLETE").c_str());
+        CPlayer::GetInstance().SearchAlbumCover();
+        CPlayer::GetInstance().AlbumCoverGaussBlur();
+    }
+    else
+    {
+        SetDlgItemText(IDC_INFO_STATIC, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_INFO_COMPLETE").c_str());
+        CPlayer::GetInstance().SearchLyrics(true);
+        CPlayer::GetInstance().IniLyrics();
+    }
     return 0;
 }
 

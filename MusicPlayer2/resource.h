@@ -323,6 +323,8 @@
 #define IDR_TEXT3                       691
 #define IDR_TEST_DIALOG                 691
 #define IDD_OPEN_URL_DLG                692
+#define IDD_AI_ORGANIZE_DIALOG          694
+#define IDD_AI_SETTING_DIALOG           695
 #define IDC_LIST1                       1002
 #define IDC_PATH_LIST                   1002
 #define IDC_LYRIC_DOWN_LIST1            1002
@@ -897,6 +899,7 @@
 #define ID_DOWNLOAD_LYRIC               32892
 #define ID_LYRIC_BATCH_DOWNLOAD         32894
 #define ID_DELETE_LYRIC                 32897
+#define ID_TOOL_AI_ORGANIZE             32899
 #define ID_DARK_MODE                    32900
 #define ID_LYRIC_OPEN                   32911
 #define ID_LYRIC_SAVE_AS                32913
@@ -1089,14 +1092,47 @@
 #define ID_SONGS_MULTI_VERSION_ITEM_START 33481
 #define ID_SONGS_MULTI_VERSION_ITEM_MAX 33511
 #define ID_LIST_ITEM_PREVIEW            33512
+#define IDC_AI_OPT_WRITE_TAG            1387
+#define IDC_AI_OPT_DOWNLOAD_LYRIC       1388
+#define IDC_AI_OPT_EMBED_LYRIC          1389
+#define IDC_AI_OPT_DOWNLOAD_COVER       1390
+#define IDC_AI_OPT_EMBED_COVER          1391
+#define IDC_AI_SETTING_BTN              1392
+#define IDC_AI_SONG_LIST                1393
+#define IDC_AI_PROGRESS_BAR             1394
+#define IDC_AI_INFO_STATIC              1395
+#define IDC_AI_START_ANALYZE            1396
+#define IDC_AI_APPLY_SELECTED           1397
+#define IDC_AI_SETTING_COMBO            1398
+#define IDC_AI_URL_EDIT                 1399
+#define IDC_AI_KEY_EDIT                 1400
+#define IDC_AI_TEST_BTN                 1402
+#define IDC_TXT_AI_OPT_GROUP_STATIC     1403
+#define IDC_TXT_AI_SONG_LIST_STATIC     1404
+#define IDC_TXT_AI_PROVIDER_STATIC      1405
+#define IDC_TXT_AI_URL_STATIC           1406
+#define IDC_TXT_AI_KEY_STATIC           1407
+#define IDC_TXT_AI_MODEL_STATIC         1408
+#define IDC_TXT_AI_KEY_HINT_STATIC      1409
+#define IDC_AI_CANCEL_BTN               1410
+#define IDC_AI_FETCH_MODELS_BTN         1411
+#define IDC_AI_MODEL_COMBO              1412
+#define IDC_AI_FORMAT_COMBO             1413
+#define IDC_TXT_AI_FORMAT_STATIC        1414
+#define IDC_AI_CONCURRENCY_EDIT         1415
+#define IDC_TXT_AI_CONCURRENCY_STATIC   1416
+#define IDC_AI_SELECT_ALL               1417
+#define IDC_LYRIC_BDL_EMBED             1418
+#define IDC_LYRIC_BDL_COVER             1419
+#define IDC_LYRIC_BDL_EMBED_COVER       1420
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        694
-#define _APS_NEXT_COMMAND_VALUE         33513
-#define _APS_NEXT_CONTROL_VALUE         1387
+#define _APS_NEXT_RESOURCE_VALUE        696
+#define _APS_NEXT_COMMAND_VALUE         33514
+#define _APS_NEXT_CONTROL_VALUE         1421
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

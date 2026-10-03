@@ -100,6 +100,7 @@ CMusicPlayerDlg::~CMusicPlayerDlg()
     CCommon::DeleteModelessDialog(m_pMediaLibDlg);
     CCommon::DeleteModelessDialog(m_pSoundEffecDlg);
     CCommon::DeleteModelessDialog(m_pFormatConvertDlg);
+    CCommon::DeleteModelessDialog(m_pAiSongOrganizeDlg);
     CCommon::DeleteModelessDialog(m_pFloatPlaylistDlg);
 }
 
@@ -214,6 +215,7 @@ BEGIN_MESSAGE_MAP(CMusicPlayerDlg, CMainDialogBase)
     ON_COMMAND(ID_EDIT_LYRIC, &CMusicPlayerDlg::OnEditLyric)
     ON_COMMAND(ID_DOWNLOAD_LYRIC, &CMusicPlayerDlg::OnDownloadLyric)
     ON_COMMAND(ID_LYRIC_BATCH_DOWNLOAD, &CMusicPlayerDlg::OnLyricBatchDownload)
+    ON_COMMAND(ID_TOOL_AI_ORGANIZE, &CMusicPlayerDlg::OnToolAiOrganize)
     ON_COMMAND(ID_DELETE_LYRIC, &CMusicPlayerDlg::OnDeleteLyric)
     ON_WM_RBUTTONUP()
     ON_WM_MOUSEMOVE()
@@ -4180,6 +4182,16 @@ void CMusicPlayerDlg::OnLyricBatchDownload()
     m_pLyricBatchDownDlg->Create(IDD_LYRIC_BATCH_DOWN_DIALOG);
     m_pLyricBatchDownDlg->ShowWindow(SW_SHOW);
 
+}
+
+
+void CMusicPlayerDlg::OnToolAiOrganize()
+{
+    //AI自动整理歌曲（非模态对话框）
+    CCommon::DeleteModelessDialog(m_pAiSongOrganizeDlg);
+    m_pAiSongOrganizeDlg = new CAiSongOrganizeDlg;
+    m_pAiSongOrganizeDlg->Create(IDD_AI_ORGANIZE_DIALOG);
+    m_pAiSongOrganizeDlg->ShowWindow(SW_SHOW);
 }
 
 

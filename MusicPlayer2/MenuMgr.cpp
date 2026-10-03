@@ -526,6 +526,7 @@ void MenuMgr::CreateMenu(MenuBase& menu)
         menu.AppendItem(EX_ID(ID_SONG_INFO), IconMgr::IconType::IT_Info);
         menu.AppendItem(EX_ID(ID_EQUALIZER), IconMgr::IconType::IT_Equalizer);
         menu.AppendItem(EX_ID(ID_FORMAT_CONVERT1), IconMgr::IconType::IT_Convert);
+        menu.AppendItem(EX_ID(ID_TOOL_AI_ORGANIZE), IconMgr::IconType::IT_Fix);
         menu.AppendItem(EX_ID(ID_CURRENT_EXPLORE_ONLINE), IconMgr::IconType::IT_Online);
         menu.AppendSeparator();
         menu.AppendItem(EX_ID(ID_RE_INI_BASS), IconMgr::IconType::IT_Refresh);
