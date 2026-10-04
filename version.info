@@ -9,9 +9,9 @@
 		<link_x64>https://github.com/huaaaajjj/MusicPlayer2/releases/download/V2.79/MusicPlayer2_V2.79_x64.zip</link_x64>
 	</Gitee>
 	<update_contents>
-		<contents_zh_cn>新增功能：\n新增“AI自动整理歌曲”功能，可根据文件名和现有标签分析并修正歌曲信息，支持歌词和专辑封面的下载与内嵌\n新增酷狗音乐作为歌词和专辑封面下载服务\n“歌词批量下载”改为“批量下载”，使用选项卡提供歌词批量下载、歌词批量嵌入、专辑封面批量下载、专辑封面批量嵌入，并显示操作统计\n批量操作支持将专辑封面嵌入音频文件\n\n问题修正：\n修正新版设置面板中QQ音乐下载服务选项未正确选中的问题</contents_zh_cn>
-		<contents_en>New Features:\nAdded AI Song Organize, which analyzes and corrects song metadata from file names and existing tags, with lyrics and album-cover download/embedding support.\nAdded Kugou Music as a lyrics and album cover download service.\nRenamed "Lyrics Batch Download" to "Batch Download", using tabs for lyrics/album-cover download and embedding, with operation statistics.\nBatch operations can now embed album covers into audio files.\n\nBug Fixes:\nFixed the QQ Music download service option not being selected correctly in the new settings panel.</contents_en>
+		<contents_zh_cn>新增功能：\n新增酷狗音乐作为歌词和专辑封面下载服务\n“歌词批量下载”改为“批量下载”，使用选项卡提供歌词批量下载、歌词批量嵌入、专辑封面批量下载、专辑封面批量嵌入，并显示操作统计\n批量操作支持将专辑封面嵌入音频文件\n\n问题修正：\n修正新版设置面板中QQ音乐下载服务选项未正确选中的问题</contents_zh_cn>
+		<contents_en>New Features:\nAdded Kugou Music as a lyrics and album cover download service.\nRenamed "Lyrics Batch Download" to "Batch Download", using tabs for lyrics/album-cover download and embedding, with operation statistics.\nBatch operations can now embed album covers into audio files.\n\nBug Fixes:\nFixed the QQ Music download service option not being selected correctly in the new settings panel.</contents_en>
 	</update_contents>
 	<!--以下内容为了兼容旧版本程序的检查更新功能-->
-	<contents>新增功能：\n新增“AI自动整理歌曲”功能，可根据文件名和现有标签分析并修正歌曲信息，支持歌词和专辑封面的下载与内嵌\n新增酷狗音乐作为歌词和专辑封面下载服务\n“歌词批量下载”改为“批量下载”，使用选项卡提供歌词批量下载、歌词批量嵌入、专辑封面批量下载、专辑封面批量嵌入，并显示操作统计\n批量操作支持将专辑封面嵌入音频文件\n\n问题修正：\n修正新版设置面板中QQ音乐下载服务选项未正确选中的问题</contents>
+	<contents>新增功能：\n新增酷狗音乐作为歌词和专辑封面下载服务\n“歌词批量下载”改为“批量下载”，使用选项卡提供歌词批量下载、歌词批量嵌入、专辑封面批量下载、专辑封面批量嵌入，并显示操作统计\n批量操作支持将专辑封面嵌入音频文件\n\n问题修正：\n修正新版设置面板中QQ音乐下载服务选项未正确选中的问题</contents>
 </MusicPlayer2>

@@ -29,6 +29,7 @@ BEGIN_MESSAGE_MAP(CMediaLibTabDlg, CTabDlg)
     ON_COMMAND(ID_EXPLORE_ONLINE, &CMediaLibTabDlg::OnExploreOnline)
     ON_COMMAND(ID_EXPLORE_TRACK, &CMediaLibTabDlg::OnExploreTrack)
     ON_COMMAND(ID_FORMAT_CONVERT, &CMediaLibTabDlg::OnFormatConvert)
+    ON_COMMAND(ID_EXPORT_EMBEDDED_MEDIA, &CMediaLibTabDlg::OnExportEmbeddedMedia)
     ON_COMMAND(ID_DELETE_FROM_DISK, &CMediaLibTabDlg::OnDeleteFromDisk)
     ON_COMMAND(ID_ITEM_PROPERTY, &CMediaLibTabDlg::OnItemProperty)
     ON_COMMAND(ID_COPY_TEXT, &CMediaLibTabDlg::OnCopyText)
@@ -189,6 +190,7 @@ void CMediaLibTabDlg::OnInitMenu(CMenu* pMenu)
         std::find_if(songs.begin(), songs.end(), [&](const SongInfo& song_info) { return song_info.is_cue || COSUPlayerHelper::IsOsuFile(song_info.file_path); }) != songs.end();
 
     pMenu->EnableMenuItem(ID_PLAY_AS_NEXT, MF_BYCOMMAND | (select_all_in_playing_list ? MF_ENABLED : MF_GRAYED));
+    pMenu->EnableMenuItem(ID_EXPORT_EMBEDDED_MEDIA, MF_BYCOMMAND | (!songs.empty() ? MF_ENABLED : MF_GRAYED));
     pMenu->EnableMenuItem(ID_DELETE_FROM_DISK, MF_BYCOMMAND | (can_del ? MF_ENABLED : MF_GRAYED));
 }
 
@@ -281,6 +283,13 @@ void CMediaLibTabDlg::OnFormatConvert()
     cmd_helper.FormatConvert(songs);
 }
 
+
+void CMediaLibTabDlg::OnExportEmbeddedMedia()
+{
+    std::vector<SongInfo> songs;
+    GetSongsSelected(songs);
+    CMusicPlayerCmdHelper(this).ExportEmbeddedMedia(songs);
+}
 
 void CMediaLibTabDlg::OnDeleteFromDisk()
 {

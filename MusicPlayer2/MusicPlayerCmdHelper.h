@@ -15,6 +15,8 @@ public:
 
     void FormatConvert(const std::vector<SongInfo>& songs);
 
+    void ExportEmbeddedMedia(const std::vector<SongInfo>& songs);
+
     //执行添加到新建播放列表命令，成功返回true
     //get_song_list: 获取要添加的文件列表的回调函数，函数原型为 void Func(std::vector<SongInfo>&)
     //playlist_path: 接收新播放列表的路径

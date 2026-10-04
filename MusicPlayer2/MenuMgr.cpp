@@ -526,7 +526,7 @@ void MenuMgr::CreateMenu(MenuBase& menu)
         menu.AppendItem(EX_ID(ID_SONG_INFO), IconMgr::IconType::IT_Info);
         menu.AppendItem(EX_ID(ID_EQUALIZER), IconMgr::IconType::IT_Equalizer);
         menu.AppendItem(EX_ID(ID_FORMAT_CONVERT1), IconMgr::IconType::IT_Convert);
-        menu.AppendItem(EX_ID(ID_TOOL_AI_ORGANIZE), IconMgr::IconType::IT_Fix);
+        menu.AppendItem(EX_ID(ID_EXPORT_CURRENT_EMBEDDED_MEDIA), IconMgr::IconType::IT_Save_As);
         menu.AppendItem(EX_ID(ID_CURRENT_EXPLORE_ONLINE), IconMgr::IconType::IT_Online);
         menu.AppendSeparator();
         menu.AppendItem(EX_ID(ID_RE_INI_BASS), IconMgr::IconType::IT_Refresh);
@@ -707,6 +707,7 @@ void MenuMgr::CreateMenu(MenuBase& menu)
         menu.AppendSeparator();
         menu.AppendItem(EX_ID(ID_EXPLORE_ONLINE), IconMgr::IconType::IT_Online);
         menu.AppendItem(EX_ID(ID_FORMAT_CONVERT), IconMgr::IconType::IT_Convert);
+        menu.AppendItem(EX_ID(ID_EXPORT_EMBEDDED_MEDIA), IconMgr::IconType::IT_Save_As);
         menu.AppendSubMenu(RateMenu, IconMgr::IconType::IT_Star);
         menu.AppendSeparator();
         menu.AppendItem(EX_ID(ID_RELOAD_PLAYLIST), IconMgr::IconType::IT_Loop_Playlist);
@@ -841,6 +842,7 @@ void MenuMgr::CreateMenu(MenuBase& menu)
         menu.AppendSeparator();
         menu.AppendItem(EX_ID(ID_EXPLORE_ONLINE), IconMgr::IconType::IT_Online);
         menu.AppendItem(EX_ID(ID_FORMAT_CONVERT), IconMgr::IconType::IT_Convert);
+        menu.AppendItem(EX_ID(ID_EXPORT_EMBEDDED_MEDIA), IconMgr::IconType::IT_Save_As);
         menu.AppendItem(EX_ID(ID_EXPLORE_TRACK), IconMgr::IconType::IT_Folder_Explore);
         menu.AppendItem(EX_ID(ID_DELETE_FROM_DISK), IconMgr::IconType::IT_Cancel);
         menu.AppendItem(EX_ID(ID_ITEM_PROPERTY), IconMgr::IconType::IT_Info);
@@ -860,6 +862,7 @@ void MenuMgr::CreateMenu(MenuBase& menu)
         menu.AppendSeparator();
         menu.AppendItem(EX_ID(ID_EXPLORE_ONLINE), IconMgr::IconType::IT_Online);
         menu.AppendItem(EX_ID(ID_FORMAT_CONVERT), IconMgr::IconType::IT_Convert);
+        menu.AppendItem(EX_ID(ID_EXPORT_EMBEDDED_MEDIA), IconMgr::IconType::IT_Save_As);
         menu.AppendItem(EX_ID(ID_EXPLORE_TRACK), IconMgr::IconType::IT_Folder_Explore);
         menu.AppendItem(EX_ID(ID_REMOVE_FROM_PLAYLIST), IconMgr::IconType::IT_Cancel);
         menu.AppendItem(EX_ID(ID_DELETE_FROM_DISK), IconMgr::IconType::IT_Delete);

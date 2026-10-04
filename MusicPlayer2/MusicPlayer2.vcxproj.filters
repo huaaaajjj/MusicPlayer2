@@ -561,15 +561,6 @@
     <ClInclude Include="LyricBatchDownloadDlg.h">
       <Filter>对话框类\歌词下载对话框</Filter>
     </ClInclude>
-    <ClInclude Include="AiClient.h">
-      <Filter>公共的类</Filter>
-    </ClInclude>
-    <ClInclude Include="AiSettingDlg.h">
-      <Filter>对话框类\AI自动整理对话框</Filter>
-    </ClInclude>
-    <ClInclude Include="AiSongOrganizeDlg.h">
-      <Filter>对话框类\AI自动整理对话框</Filter>
-    </ClInclude>
     <ClInclude Include="EqualizerDlg.h">
       <Filter>对话框类\Sound Effect Dialog</Filter>
     </ClInclude>
@@ -586,6 +577,12 @@
       <Filter>派生的控件类\ColorStatic</Filter>
     </ClInclude>
     <ClInclude Include="AudioTag.h">
+      <Filter>公共的类\AudioTag</Filter>
+    </ClInclude>
+    <ClInclude Include="AlbumCoverCompressor.h">
+      <Filter>公共的类\AudioTag</Filter>
+    </ClInclude>
+    <ClInclude Include="EmbeddedMedia.h">
       <Filter>公共的类\AudioTag</Filter>
     </ClInclude>
     <ClInclude Include="FilePathHelper.h">
@@ -1307,15 +1304,6 @@
     <ClCompile Include="LyricBatchDownloadDlg.cpp">
       <Filter>对话框类\歌词下载对话框</Filter>
     </ClCompile>
-    <ClCompile Include="AiClient.cpp">
-      <Filter>公共的类</Filter>
-    </ClCompile>
-    <ClCompile Include="AiSettingDlg.cpp">
-      <Filter>对话框类\AI自动整理对话框</Filter>
-    </ClCompile>
-    <ClCompile Include="AiSongOrganizeDlg.cpp">
-      <Filter>对话框类\AI自动整理对话框</Filter>
-    </ClCompile>
     <ClCompile Include="EqualizerDlg.cpp">
       <Filter>对话框类\Sound Effect Dialog</Filter>
     </ClCompile>
@@ -1332,6 +1320,12 @@
       <Filter>派生的控件类\ColorStatic</Filter>
     </ClCompile>
     <ClCompile Include="AudioTag.cpp">
+      <Filter>公共的类\AudioTag</Filter>
+    </ClCompile>
+    <ClCompile Include="AlbumCoverCompressor.cpp">
+      <Filter>公共的类\AudioTag</Filter>
+    </ClCompile>
+    <ClCompile Include="EmbeddedMedia.cpp">
       <Filter>公共的类\AudioTag</Filter>
     </ClCompile>
     <ClCompile Include="FilePathHelper.cpp">

@@ -6,7 +6,10 @@
 
 **New Features:**
 
-- Added AI Song Organize, which analyzes and corrects song metadata from file names and existing tags, with lyrics and album-cover download/embedding support.
+- Embedded artwork is now limited to 4 MiB: oversized images are automatically compressed and resized when needed, without changing the source image.
+
+- Added embedded cover/lyrics extraction from the Tools menu and playlist/media-library context menus: overwrite sidecars beside each track before removing embedded tags, keeping one external lyrics file and cover per track. See [usage and validation](embedded_media.md).
+
 - Added Kugou Music as a lyrics and album cover download service.
 - Renamed "Lyrics Batch Download" to "Batch Download", using tabs for lyrics/album-cover download and embedding, with operation statistics.
 - Batch operations can now embed album covers into audio files.

@@ -62,6 +62,7 @@ public:
     afx_msg void OnExploreOnline();
     afx_msg void OnExploreTrack();
     afx_msg void OnFormatConvert();
+    afx_msg void OnExportEmbeddedMedia();
     afx_msg void OnDeleteFromDisk();
     afx_msg void OnItemProperty();
     afx_msg void OnCopyText();

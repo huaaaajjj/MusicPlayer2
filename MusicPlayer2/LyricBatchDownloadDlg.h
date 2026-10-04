@@ -115,17 +115,20 @@ protected:
     void ShowBatchStatistics(BatchAction action);
     BatchAction GetCurrentAction();
     void UpdateActionTab();
+    void UpdateDownloadSourceTitle();
 
 	DECLARE_MESSAGE_MAP()
 public:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnBnClickedStartDownload();
     afx_msg void OnTcnSelchangeActionTab(NMHDR* pNMHDR, LRESULT* pResult);
+    afx_msg void OnBnClickedSwitchSource();
     afx_msg void OnBnClickedEmbedLyric();
     afx_msg void OnBnClickedDownloadCover();
     afx_msg void OnBnClickedEmbedCover();
 	afx_msg void OnBnClickedSkipExistCheck();
 	afx_msg void OnDestroy();
+    afx_msg void OnTimer(UINT_PTR timer_id);
 	afx_msg void OnCbnSelchangeCombo1();
 	afx_msg void OnBnClickedDownloadTrasnlateCheck2();
 protected:

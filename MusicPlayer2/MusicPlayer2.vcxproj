@@ -240,6 +240,8 @@
     <ClInclude Include="AppearanceSettingDlg.h" />
     <ClInclude Include="AudioCommon.h" />
     <ClInclude Include="AudioTag.h" />
+    <ClInclude Include="AlbumCoverCompressor.h" />
+    <ClInclude Include="EmbeddedMedia.h" />
     <ClInclude Include="AudioTagOld.h" />
     <ClInclude Include="BaseDialog.h" />
     <ClInclude Include="bass.h" />
@@ -461,9 +463,6 @@
     <ClInclude Include="ListCtrlEx.h" />
     <ClInclude Include="LyricDownloadCommon.h" />
     <ClInclude Include="LyricBatchDownloadDlg.h" />
-    <ClInclude Include="AiClient.h" />
-    <ClInclude Include="AiSettingDlg.h" />
-    <ClInclude Include="AiSongOrganizeDlg.h" />
     <ClInclude Include="LyricDownloadDlg.h" />
     <ClInclude Include="LyricEditDlg.h" />
     <ClInclude Include="MiniModeDlg.h" />
@@ -494,6 +493,8 @@
     <ClCompile Include="AppearanceSettingDlg.cpp" />
     <ClCompile Include="AudioCommon.cpp" />
     <ClCompile Include="AudioTag.cpp" />
+    <ClCompile Include="AlbumCoverCompressor.cpp" />
+    <ClCompile Include="EmbeddedMedia.cpp" />
     <ClCompile Include="AudioTagOld.cpp" />
     <ClCompile Include="BaseDialog.cpp" />
     <ClCompile Include="BassCore.cpp" />
@@ -714,9 +715,6 @@
     <ClCompile Include="ListCtrlEx.cpp" />
     <ClCompile Include="LyricDownloadCommon.cpp" />
     <ClCompile Include="LyricBatchDownloadDlg.cpp" />
-    <ClCompile Include="AiClient.cpp" />
-    <ClCompile Include="AiSettingDlg.cpp" />
-    <ClCompile Include="AiSongOrganizeDlg.cpp" />
     <ClCompile Include="LyricDownloadDlg.cpp" />
     <ClCompile Include="LyricEditDlg.cpp" />
     <ClCompile Include="MiniModeDlg.cpp" />

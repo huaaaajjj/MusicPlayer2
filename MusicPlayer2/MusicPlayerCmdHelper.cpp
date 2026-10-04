@@ -17,6 +17,7 @@
 #include "SongInfoHelper.h"
 #include "CRecentList.h"
 #include "SongMultiVersion.h"
+#include "EmbeddedMedia.h"
 
 CMusicPlayerCmdHelper::CMusicPlayerCmdHelper(CWnd* pOwner)
     : m_pOwner(pOwner)
@@ -85,6 +86,88 @@ void CMusicPlayerCmdHelper::FormatConvert(const std::vector<SongInfo>& songs)
     pPlayerDlg->m_pFormatConvertDlg = new CFormatConvertDlg(songs, GetOwner());
     pPlayerDlg->m_pFormatConvertDlg->Create(IDD_FORMAT_CONVERT_DIALOG);
     pPlayerDlg->m_pFormatConvertDlg->ShowWindow(SW_SHOW);
+}
+
+void CMusicPlayerCmdHelper::ExportEmbeddedMedia(const std::vector<SongInfo>& songs)
+{
+    if (songs.empty())
+        return;
+    const auto inquiry = theApp.m_str_table.LoadTextFormat(L"MSG_EXPORT_EMBEDDED_MEDIA_CONFIRM", { songs.size() });
+    if (GetOwner()->MessageBox(inquiry.c_str(), nullptr, MB_ICONWARNING | MB_YESNO | MB_DEFBUTTON2) != IDYES)
+        return;
+
+    int exported{};
+    int skipped{};
+    int failed{};
+    std::wstring failed_paths;
+    std::set<std::wstring> processed;
+    auto& player = CPlayer::GetInstance();
+    {
+        CWaitCursor wait;
+        for (const auto& song : songs)
+        {
+            auto key = song.file_path;
+            CCommon::StringTransform(key, false);
+            if (!processed.insert(key).second)
+                continue;
+            if (song.file_path.empty() || song.is_cue || CCommon::IsURL(song.file_path) || COSUPlayerHelper::IsOsuFile(song.file_path))
+            {
+                ++skipped;
+                continue;
+            }
+            const bool current = _wcsicmp(song.file_path.c_str(), player.GetCurrentFilePath().c_str()) == 0;
+            auto result = CEmbeddedMedia::Result::Failed;
+            std::wstring lyric_path;
+            std::wstring cover_path;
+            {
+                CPlayer::ReOpen reopen(current);
+                if (reopen.IsLockSuccess())
+                {
+                    result = CEmbeddedMedia::ExportAndRemove(song.file_path, lyric_path, cover_path);
+                    if (result == CEmbeddedMedia::Result::Exported)
+                    {
+                        SongInfo updated = CSongDataManager::GetInstance().GetSongInfo3(song);
+                        if (!lyric_path.empty())
+                        {
+                            updated.lyric_file = lyric_path;
+                            updated.SetNoOnlineLyric(true);
+                        }
+                        if (!cover_path.empty())
+                        {
+                            updated.SetAlwaysUseExternalAlbumCover(true);
+                            updated.SetNoOnlineAlbumCover(true);
+                        }
+                        CSongDataManager::GetInstance().AddItem(updated);
+                        for (auto& playlist_song : player.GetPlayList())
+                        {
+                            if (_wcsicmp(playlist_song.file_path.c_str(), song.file_path.c_str()) == 0)
+                                CSongDataManager::GetInstance().LoadSongInfo(playlist_song);
+                        }
+                    }
+                }
+            }
+            if (result == CEmbeddedMedia::Result::Exported)
+            {
+                ++exported;
+                if (current)
+                {
+                    player.IniLyrics();
+                    player.SearchAlbumCover();
+                }
+            }
+            else if (result == CEmbeddedMedia::Result::Failed)
+            {
+                ++failed;
+                if (failed <= 10)
+                    failed_paths += L"\r\n" + song.file_path;
+            }
+            else
+                ++skipped;
+        }
+    }
+    auto summary = theApp.m_str_table.LoadTextFormat(L"MSG_EXPORT_EMBEDDED_MEDIA_RESULT", { exported, skipped, failed });
+    summary += failed_paths;
+    GetOwner()->MessageBox(summary.c_str(), nullptr, MB_OK | (failed > 0 ? MB_ICONWARNING : MB_ICONINFORMATION));
 }
 
 bool CMusicPlayerCmdHelper::OnAddToNewPlaylist(std::function<void(std::vector<SongInfo>&)> get_song_list, std::wstring& playlist_path, const std::wstring& default_name /*= L""*/)

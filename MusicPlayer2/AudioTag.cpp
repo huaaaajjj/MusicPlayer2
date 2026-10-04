@@ -4,6 +4,7 @@
 #include "AudioTagOld.h"
 #include "CueFile.h"
 #include "FilePathHelper.h"
+#include "AlbumCoverCompressor.h"
 
 CAudioTag::CAudioTag(SongInfo& song_info, HSTREAM hStream)
     :m_song_info{ song_info }, m_hStream{ hStream }
@@ -367,36 +368,40 @@ bool CAudioTag::WriteAudioTag()
 
 bool CAudioTag::WriteAlbumCover(const wstring& album_cover_path)
 {
+    CAlbumCoverCompressor prepared_cover;
+    if (!prepared_cover.Prepare(album_cover_path))
+        return false;
+    const auto& cover_path = prepared_cover.GetPath();
     switch (m_type)
     {
     case AU_MP3:
-        return CTagLibHelper::WriteMp3AlbumCover(m_song_info.file_path, album_cover_path);
+        return CTagLibHelper::WriteMp3AlbumCover(m_song_info.file_path, cover_path);
     case AU_WMA_ASF:
-        return CTagLibHelper::WriteAsfAlbumCover(m_song_info.file_path, album_cover_path);
+        return CTagLibHelper::WriteAsfAlbumCover(m_song_info.file_path, cover_path);
     case AU_OGG:
-        return CTagLibHelper::WriteOggAlbumCover(m_song_info.file_path, album_cover_path);
+        return CTagLibHelper::WriteOggAlbumCover(m_song_info.file_path, cover_path);
     case AU_MP4:
-        return CTagLibHelper::WriteM4aAlbumCover(m_song_info.file_path, album_cover_path);
+        return CTagLibHelper::WriteM4aAlbumCover(m_song_info.file_path, cover_path);
     case AU_APE:
-        return CTagLibHelper::WriteApeAlbumCover(m_song_info.file_path, album_cover_path);
+        return CTagLibHelper::WriteApeAlbumCover(m_song_info.file_path, cover_path);
     case AU_AIFF:
-        return CTagLibHelper::WriteAiffAlbumCover(m_song_info.file_path, album_cover_path);
+        return CTagLibHelper::WriteAiffAlbumCover(m_song_info.file_path, cover_path);
     case AU_FLAC:
-        return CTagLibHelper::WriteFlacAlbumCover(m_song_info.file_path, album_cover_path);
+        return CTagLibHelper::WriteFlacAlbumCover(m_song_info.file_path, cover_path);
     case AU_WAV:
-        return CTagLibHelper::WriteWavAlbumCover(m_song_info.file_path, album_cover_path);
+        return CTagLibHelper::WriteWavAlbumCover(m_song_info.file_path, cover_path);
     case AU_MPC:
-        return CTagLibHelper::WriteMpcAlbumCover(m_song_info.file_path, album_cover_path);
+        return CTagLibHelper::WriteMpcAlbumCover(m_song_info.file_path, cover_path);
     case AU_DSD:
         break;
     case AU_OPUS:
-        //return CTagLibHelper::WriteOpusAlbumCover(m_song_info.file_path, album_cover_path);
+        //return CTagLibHelper::WriteOpusAlbumCover(m_song_info.file_path, cover_path);
     case AU_WV:
-        return CTagLibHelper::WriteWavePackAlbumCover(m_song_info.file_path, album_cover_path);;
+        return CTagLibHelper::WriteWavePackAlbumCover(m_song_info.file_path, cover_path);;
     case AU_SPX:
-        return CTagLibHelper::WriteSpxAlbumCover(m_song_info.file_path, album_cover_path);
+        return CTagLibHelper::WriteSpxAlbumCover(m_song_info.file_path, cover_path);
     case AU_TTA:
-        return CTagLibHelper::WriteTtaAlbumCover(m_song_info.file_path, album_cover_path);
+        return CTagLibHelper::WriteTtaAlbumCover(m_song_info.file_path, cover_path);
     default:
         break;
     }

@@ -100,7 +100,6 @@ CMusicPlayerDlg::~CMusicPlayerDlg()
     CCommon::DeleteModelessDialog(m_pMediaLibDlg);
     CCommon::DeleteModelessDialog(m_pSoundEffecDlg);
     CCommon::DeleteModelessDialog(m_pFormatConvertDlg);
-    CCommon::DeleteModelessDialog(m_pAiSongOrganizeDlg);
     CCommon::DeleteModelessDialog(m_pFloatPlaylistDlg);
 }
 
@@ -215,7 +214,6 @@ BEGIN_MESSAGE_MAP(CMusicPlayerDlg, CMainDialogBase)
     ON_COMMAND(ID_EDIT_LYRIC, &CMusicPlayerDlg::OnEditLyric)
     ON_COMMAND(ID_DOWNLOAD_LYRIC, &CMusicPlayerDlg::OnDownloadLyric)
     ON_COMMAND(ID_LYRIC_BATCH_DOWNLOAD, &CMusicPlayerDlg::OnLyricBatchDownload)
-    ON_COMMAND(ID_TOOL_AI_ORGANIZE, &CMusicPlayerDlg::OnToolAiOrganize)
     ON_COMMAND(ID_DELETE_LYRIC, &CMusicPlayerDlg::OnDeleteLyric)
     ON_WM_RBUTTONUP()
     ON_WM_MOUSEMOVE()
@@ -242,6 +240,8 @@ BEGIN_MESSAGE_MAP(CMusicPlayerDlg, CMainDialogBase)
     //ON_MESSAGE(WM_OPEN_FILE_COMMAND_LINE, &CMusicPlayerDlg::OnOpenFileCommandLine)
     ON_COMMAND(ID_FORMAT_CONVERT, &CMusicPlayerDlg::OnFormatConvert)
     ON_COMMAND(ID_FORMAT_CONVERT1, &CMusicPlayerDlg::OnFormatConvert1)
+    ON_COMMAND(ID_EXPORT_EMBEDDED_MEDIA, &CMusicPlayerDlg::OnExportEmbeddedMedia)
+    ON_COMMAND(ID_EXPORT_CURRENT_EMBEDDED_MEDIA, &CMusicPlayerDlg::OnExportCurrentEmbeddedMedia)
     ON_MESSAGE(WM_SETTINGS_APPLIED, &CMusicPlayerDlg::OnSettingsApplied)
     ON_MESSAGE(WM_ALBUM_COVER_DOWNLOAD_COMPLETE, &CMusicPlayerDlg::OnAlbumCoverDownloadComplete)
     ON_WM_DWMCOLORIZATIONCOLORCHANGED()
@@ -1582,6 +1582,8 @@ void CMusicPlayerDlg::SetMenuState(CMenu* pMenu)
     pMenu->EnableMenuItem(ID_PLAY_AS_NEXT, MF_BYCOMMAND | (selete_valid ? MF_ENABLED : MF_GRAYED));
     pMenu->EnableMenuItem(ID_REMOVE_FROM_PLAYLIST, MF_BYCOMMAND | (selete_valid && playlist_mode ? MF_ENABLED : MF_GRAYED));
     pMenu->EnableMenuItem(ID_ITEM_PROPERTY, MF_BYCOMMAND | (selete_valid ? MF_ENABLED : MF_GRAYED));
+    pMenu->EnableMenuItem(ID_EXPORT_EMBEDDED_MEDIA, MF_BYCOMMAND | (selete_valid ? MF_ENABLED : MF_GRAYED));
+    pMenu->EnableMenuItem(ID_EXPORT_CURRENT_EMBEDDED_MEDIA, MF_BYCOMMAND | (CPlayer::GetInstance().GetSongNum() > 0 ? MF_ENABLED : MF_GRAYED));
     pMenu->EnableMenuItem(ID_RENAME, MF_BYCOMMAND | (can_delete ? MF_ENABLED : MF_GRAYED));
     pMenu->EnableMenuItem(ID_DELETE_FROM_DISK, MF_BYCOMMAND | (selete_valid && can_delete && !theApp.m_media_lib_setting_data.disable_delete_from_disk ? MF_ENABLED : MF_GRAYED));
     pMenu->EnableMenuItem(ID_EXPLORE_ONLINE, MF_BYCOMMAND | (selete_valid ? MF_ENABLED : MF_GRAYED));
@@ -4185,16 +4187,6 @@ void CMusicPlayerDlg::OnLyricBatchDownload()
 }
 
 
-void CMusicPlayerDlg::OnToolAiOrganize()
-{
-    //AI自动整理歌曲（非模态对话框）
-    CCommon::DeleteModelessDialog(m_pAiSongOrganizeDlg);
-    m_pAiSongOrganizeDlg = new CAiSongOrganizeDlg;
-    m_pAiSongOrganizeDlg->Create(IDD_AI_ORGANIZE_DIALOG);
-    m_pAiSongOrganizeDlg->ShowWindow(SW_SHOW);
-}
-
-
 void CMusicPlayerDlg::OnDeleteLyric()
 {
     // TODO: 在此添加命令处理程序代码
@@ -4953,6 +4945,23 @@ void CMusicPlayerDlg::OnFormatConvert()
     cmd_helper.FormatConvert(songs);
 }
 
+
+void CMusicPlayerDlg::OnExportEmbeddedMedia()
+{
+    std::vector<SongInfo> songs;
+    for (int index : m_items_selected)
+    {
+        if (index >= 0 && index < CPlayer::GetInstance().GetSongNum())
+            songs.push_back(CPlayer::GetInstance().GetPlayList()[index]);
+    }
+    CMusicPlayerCmdHelper(this).ExportEmbeddedMedia(songs);
+}
+
+void CMusicPlayerDlg::OnExportCurrentEmbeddedMedia()
+{
+    if (CPlayer::GetInstance().GetSongNum() > 0)
+        CMusicPlayerCmdHelper(this).ExportEmbeddedMedia({ CPlayer::GetInstance().GetCurrentSongInfo() });
+}
 
 void CMusicPlayerDlg::OnFormatConvert1()
 {

@@ -12,6 +12,11 @@
 #include "Lyric.h"
 #include "AudioTag.h"
 
+namespace
+{
+    constexpr UINT_PTR BATCH_STATISTICS_TIMER_ID = 1;
+}
+
 
 // CLyricBatchDownloadDlg 对话框
 
@@ -34,14 +39,9 @@ CString CLyricBatchDownloadDlg::GetDialogName() const
 
 bool CLyricBatchDownloadDlg::InitializeControls()
 {
+    UpdateDownloadSourceTitle();
+    SetDlgControlText(IDC_LYRIC_BDL_SOURCE_BTN, L"TXT_LYRIC_BDL_SWITCH_SOURCE");
     wstring temp;
-    if (theApp.m_general_setting_data.lyric_download_service == GeneralSettingData::LDS_KUGOU)
-        temp = theApp.m_str_table.LoadText(L"TITLE_LYRIC_BDL_KUGOU");
-    else if (theApp.m_general_setting_data.lyric_download_service == GeneralSettingData::LDS_QQMUSIC)
-        temp = theApp.m_str_table.LoadText(L"TITLE_LYRIC_BDL_QQMUSIC");
-    else
-        temp = theApp.m_str_table.LoadText(L"TITLE_LYRIC_BDL");
-    SetWindowTextW(temp.c_str());
     temp = theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_DL_OPT");
     SetDlgItemTextW(IDC_TXT_LYRIC_BDL_DL_OPT_STATIC, temp.c_str());
     temp = theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_SKIP_ALREADY");
@@ -104,6 +104,7 @@ void CLyricBatchDownloadDlg::EnableControls(bool enable)
     else
         GetDlgItem(IDC_SAVE_TO_LYRIC_FOLDER)->EnableWindow(enable);
     GetDlgItem(IDC_BATCH_ACTION_TAB)->EnableWindow(enable);
+    GetDlgItem(IDC_LYRIC_BDL_SOURCE_BTN)->EnableWindow(enable);
     GetDlgItem(IDC_START_DOWNLOAD)->EnableWindow(enable);
 }
 
@@ -132,11 +133,13 @@ void CLyricBatchDownloadDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CLyricBatchDownloadDlg, CBaseDialog)
     ON_BN_CLICKED(IDC_START_DOWNLOAD, &CLyricBatchDownloadDlg::OnBnClickedStartDownload)
     ON_NOTIFY(TCN_SELCHANGE, IDC_BATCH_ACTION_TAB, &CLyricBatchDownloadDlg::OnTcnSelchangeActionTab)
+    ON_BN_CLICKED(IDC_LYRIC_BDL_SOURCE_BTN, &CLyricBatchDownloadDlg::OnBnClickedSwitchSource)
     ON_BN_CLICKED(IDC_LYRIC_BDL_EMBED, &CLyricBatchDownloadDlg::OnBnClickedEmbedLyric)
     ON_BN_CLICKED(IDC_LYRIC_BDL_COVER, &CLyricBatchDownloadDlg::OnBnClickedDownloadCover)
     ON_BN_CLICKED(IDC_LYRIC_BDL_EMBED_COVER, &CLyricBatchDownloadDlg::OnBnClickedEmbedCover)
     ON_BN_CLICKED(IDC_SKIP_EXIST_CHECK, &CLyricBatchDownloadDlg::OnBnClickedSkipExistCheck)
     ON_WM_DESTROY()
+    ON_WM_TIMER()
     ON_CBN_SELCHANGE(IDC_COMBO1, &CLyricBatchDownloadDlg::OnCbnSelchangeCombo1)
     ON_BN_CLICKED(IDC_DOWNLOAD_TRASNLATE_CHECK2, &CLyricBatchDownloadDlg::OnBnClickedDownloadTrasnlateCheck2)
     ON_MESSAGE(WM_BATCH_DOWNLOAD_COMPLATE, &CLyricBatchDownloadDlg::OnBatchDownloadComplate)
@@ -224,6 +227,8 @@ BOOL CLyricBatchDownloadDlg::OnInitDialog()
         m_song_list_ctrl.SetItemText(i, 3, m_playlist[i].GetFileName().c_str());
     }
 
+    ShowBatchStatistics(GetCurrentAction());
+
     m_progress_bar.SetBackgroundColor(GetSysColor(COLOR_BTNFACE));
     m_progress_bar.ShowWindow(SW_HIDE);
 
@@ -293,6 +298,52 @@ void CLyricBatchDownloadDlg::OnTcnSelchangeActionTab(NMHDR* pNMHDR, LRESULT* pRe
 }
 
 
+void CLyricBatchDownloadDlg::UpdateDownloadSourceTitle()
+{
+    wstring temp;
+    if (theApp.m_general_setting_data.lyric_download_service == GeneralSettingData::LDS_KUGOU)
+        temp = theApp.m_str_table.LoadText(L"TITLE_LYRIC_BDL_KUGOU");
+    else if (theApp.m_general_setting_data.lyric_download_service == GeneralSettingData::LDS_QQMUSIC)
+        temp = theApp.m_str_table.LoadText(L"TITLE_LYRIC_BDL_QQMUSIC");
+    else
+        temp = theApp.m_str_table.LoadText(L"TITLE_LYRIC_BDL");
+    SetWindowTextW(temp.c_str());
+}
+
+
+void CLyricBatchDownloadDlg::OnBnClickedSwitchSource()
+{
+    if (m_pThread != nullptr)
+        return;
+
+    CMenu source_menu;
+    if (!source_menu.CreatePopupMenu())
+        return;
+    source_menu.AppendMenu(MF_STRING, GeneralSettingData::LDS_NETEASE + 1, theApp.m_str_table.LoadText(L"TXT_OPT_DATA_NETEASE_CLOUD_MUSIC").c_str());
+    source_menu.AppendMenu(MF_STRING, GeneralSettingData::LDS_QQMUSIC + 1, theApp.m_str_table.LoadText(L"TXT_OPT_DATA_QQ_MUSIC").c_str());
+    source_menu.AppendMenu(MF_STRING, GeneralSettingData::LDS_KUGOU + 1, theApp.m_str_table.LoadText(L"TXT_OPT_DATA_KUGOU_MUSIC").c_str());
+    source_menu.CheckMenuRadioItem(GeneralSettingData::LDS_NETEASE + 1, GeneralSettingData::LDS_KUGOU + 1,
+        theApp.m_general_setting_data.lyric_download_service + 1, MF_BYCOMMAND);
+
+    CRect button_rect;
+    GetDlgItem(IDC_LYRIC_BDL_SOURCE_BTN)->GetWindowRect(button_rect);
+    const UINT command = source_menu.TrackPopupMenu(TPM_RIGHTALIGN | TPM_RETURNCMD | TPM_NONOTIFY,
+        button_rect.right, button_rect.bottom, this);
+    if (command == 0 || command > GeneralSettingData::LDS_KUGOU + 1 || m_pThread != nullptr)
+        return;
+
+    const auto service = static_cast<GeneralSettingData::LyricDownloadService>(command - 1);
+    if (service == theApp.m_general_setting_data.lyric_download_service)
+        return;
+    theApp.m_general_setting_data.lyric_download_service = service;
+    theApp.InitLyricDownload();
+    CIniHelper ini(theApp.m_config_path);
+    ini.WriteInt(L"general", L"lyric_download_service", service);
+    ini.Save();
+    UpdateDownloadSourceTitle();
+}
+
+
 void CLyricBatchDownloadDlg::StartAction(BatchAction action)
 {
     m_progress_bar.ShowWindow(SW_SHOW);
@@ -315,6 +366,7 @@ void CLyricBatchDownloadDlg::StartAction(BatchAction action)
         m_pending_cover_embeds.clear();
     }
 
+    ShowBatchStatistics(action);
     EnableControls(false);
 
     m_thread_info = ThreadInfo();
@@ -335,6 +387,8 @@ void CLyricBatchDownloadDlg::StartAction(BatchAction action)
 
     theApp.m_batch_download_dialog_exit = false;
     m_pThread = AfxBeginThread(ThreadFunc, &m_thread_info);
+    if (m_pThread != nullptr)
+        SetTimer(BATCH_STATISTICS_TIMER_ID, 1000, nullptr);
 }
 
 
@@ -345,8 +399,17 @@ void CLyricBatchDownloadDlg::OnBnClickedSkipExistCheck()
 }
 
 
+void CLyricBatchDownloadDlg::OnTimer(UINT_PTR timer_id)
+{
+    if (timer_id == BATCH_STATISTICS_TIMER_ID && m_pThread != nullptr)
+        ShowBatchStatistics(m_thread_info.action);
+    CBaseDialog::OnTimer(timer_id);
+}
+
+
 void CLyricBatchDownloadDlg::OnDestroy()
 {
+    KillTimer(BATCH_STATISTICS_TIMER_ID);
     CBaseDialog::OnDestroy();
 
     // TODO: 在此处添加消息处理程序代码
@@ -966,6 +1029,7 @@ void CLyricBatchDownloadDlg::FlushPendingCoverEmbeds()
 
 afx_msg LRESULT CLyricBatchDownloadDlg::OnBatchDownloadComplate(WPARAM wParam, LPARAM lParam)
 {
+    KillTimer(BATCH_STATISTICS_TIMER_ID);
     m_pThread = nullptr;
     m_progress_bar.SetProgress(100);
     EnableControls(true);
@@ -993,6 +1057,15 @@ afx_msg LRESULT CLyricBatchDownloadDlg::OnBatchDownloadComplate(WPARAM wParam, L
         CPlayer::GetInstance().IniLyrics();
     }
     ShowBatchStatistics(m_thread_info.action);
+    const wchar_t* complete_key = L"TXT_LYRIC_BDL_INFO_COMPLETE";
+    switch (m_thread_info.action)
+    {
+    case BatchAction::EmbedLyric: complete_key = L"TXT_LYRIC_BDL_INFO_EMBED_COMPLETE"; break;
+    case BatchAction::DownloadCover: complete_key = L"TXT_LYRIC_BDL_INFO_COVER_COMPLETE"; break;
+    case BatchAction::EmbedCover: complete_key = L"TXT_LYRIC_BDL_INFO_COVER_EMBED_COMPLETE"; break;
+    default: break;
+    }
+    SetDlgItemText(IDC_INFO_STATIC, theApp.m_str_table.LoadText(complete_key).c_str());
     return 0;
 }
 
@@ -1116,7 +1189,10 @@ void CLyricBatchDownloadDlg::ShowBatchStatistics(BatchAction action)
     }
 
     wstring info = theApp.m_str_table.LoadTextFormat(L"TXT_LYRIC_BDL_INFO_STATISTICS", { total, succeeded, skipped, failed, pending });
-    SetDlgItemText(IDC_INFO_STATIC, info.c_str());
+    CString previous_info;
+    GetDlgItemText(IDC_LYRIC_BDL_STATISTICS_STATIC, previous_info);
+    if (previous_info != info.c_str())
+        SetDlgItemText(IDC_LYRIC_BDL_STATISTICS_STATIC, info.c_str());
 }
 
 
