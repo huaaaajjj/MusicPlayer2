@@ -87,6 +87,7 @@ bool CDataSettingsDlg::InitializeControls()
     SetDlgControlText(IDC_TXT_OPT_LYRICS_AND_COVER_DL_SERVICE_STATIC, L"TXT_OPT_DATA_LYRICS_AND_COVER_DL_SERVICE");
     SetDlgControlText(IDC_NETEASE_CLOUD_MUSIC_RADIO, L"TXT_OPT_DATA_NETEASE_CLOUD_MUSIC");
     SetDlgControlText(IDC_QQ_MUSIC_RADIO, L"TXT_OPT_DATA_QQ_MUSIC");
+    SetDlgControlText(IDC_KUGOU_MUSIC_RADIO, L"TXT_OPT_DATA_KUGOU_MUSIC");
 
     SetDlgControlText(IDC_TXT_OPERATION_SETTINGS_STATIC, L"TXT_OPT_DATA_OPERATION_SETTINGS");
     SetDlgControlText(IDC_GLOBAL_MOUSE_WHEEL_VOLUME_ADJUSTMENT_CHECK, L"TXT_OPT_DATA_GLOBAL_MOUSE_WHEEL_VOLUME_ADJUSTMENT");
@@ -152,6 +153,7 @@ BEGIN_MESSAGE_MAP(CDataSettingsDlg, CTabDlg)
     ON_BN_CLICKED(IDC_OPEN_CONFIG_PATH_BUTTON, &CDataSettingsDlg::OnBnClickedOpenConfigPathButton)
     ON_BN_CLICKED(IDC_NETEASE_CLOUD_MUSIC_RADIO, &CDataSettingsDlg::OnBnClickedNeteaseCloudMusicRadio)
     ON_BN_CLICKED(IDC_QQ_MUSIC_RADIO, &CDataSettingsDlg::OnBnClickedQqMusicRadio)
+    ON_BN_CLICKED(IDC_KUGOU_MUSIC_RADIO, &CDataSettingsDlg::OnBnClickedKugouMusicRadio)
 END_MESSAGE_MAP()
 
 
@@ -192,7 +194,9 @@ BOOL CDataSettingsDlg::OnInitDialog()
     ((CButton*)GetDlgItem(IDC_DOWNLOAD_WHEN_TAG_FULL_CHECK))->SetCheck(m_data.auto_download_only_tag_full);
     ((CButton*)GetDlgItem(IDC_CHECK_UPDATE_CHECK))->SetCheck(m_data.check_update_when_start);
 
-    if (m_data.lyric_download_service == GeneralSettingData::LDS_QQMUSIC)
+    if (m_data.lyric_download_service == GeneralSettingData::LDS_KUGOU)
+        CheckDlgButton(IDC_KUGOU_MUSIC_RADIO, true);
+    else if (m_data.lyric_download_service == GeneralSettingData::LDS_QQMUSIC)
         CheckDlgButton(IDC_QQ_MUSIC_RADIO, true);
     else
         CheckDlgButton(IDC_NETEASE_CLOUD_MUSIC_RADIO, true);
@@ -358,4 +362,9 @@ void CDataSettingsDlg::OnBnClickedNeteaseCloudMusicRadio()
 void CDataSettingsDlg::OnBnClickedQqMusicRadio()
 {
     m_data.lyric_download_service = GeneralSettingData::LDS_QQMUSIC;
+}
+
+void CDataSettingsDlg::OnBnClickedKugouMusicRadio()
+{
+    m_data.lyric_download_service = GeneralSettingData::LDS_KUGOU;
 }

@@ -131,7 +131,9 @@ CString CLyricDownloadDlg::GetDialogName() const
 bool CLyricDownloadDlg::InitializeControls()
 {
     wstring temp;
-	if (theApp.m_general_setting_data.lyric_download_service == GeneralSettingData::LDS_QQMUSIC)
+	if (theApp.m_general_setting_data.lyric_download_service == GeneralSettingData::LDS_KUGOU)
+		temp = theApp.m_str_table.LoadText(L"TITLE_LYRIC_DL_KUGOU");
+	else if (theApp.m_general_setting_data.lyric_download_service == GeneralSettingData::LDS_QQMUSIC)
 		temp = theApp.m_str_table.LoadText(L"TITLE_LYRIC_DL_QQMUSIC");
 	else
 		temp = theApp.m_str_table.LoadText(L"TITLE_LYRIC_DL");

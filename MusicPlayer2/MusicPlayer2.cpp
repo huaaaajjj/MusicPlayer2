@@ -15,6 +15,7 @@
 #include "UiMediaLibItemMgr.h"
 #include "NeteaseLyricDownload.h"
 #include "QQMusicLyricDownload.h"
+#include "KugouLyricDownload.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -858,7 +859,11 @@ void CMusicPlayerApp::UpdateUiMeidaLibItems()
 
 void CMusicPlayerApp::InitLyricDownload()
 {
-    if (m_general_setting_data.lyric_download_service == GeneralSettingData::LDS_QQMUSIC)
+    if (m_general_setting_data.lyric_download_service == GeneralSettingData::LDS_KUGOU)
+    {
+        m_lyric_download = std::make_unique<CKugouLyricDownload>();
+    }
+    else if (m_general_setting_data.lyric_download_service == GeneralSettingData::LDS_QQMUSIC)
     {
         m_lyric_download = std::make_unique<CQQMusicLyricDownload>();
     }

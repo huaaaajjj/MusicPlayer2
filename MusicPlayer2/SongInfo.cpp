@@ -207,7 +207,11 @@ wstring SongInfo::GetFileName() const
 
 wstring SongInfo::GetSongId() const
 {
-    if (theApp.m_general_setting_data.lyric_download_service == GeneralSettingData::LDS_QQMUSIC)
+    if (theApp.m_general_setting_data.lyric_download_service == GeneralSettingData::LDS_KUGOU)
+    {
+        return CCommon::ASCIIToUnicode(song_id_kugou);
+    }
+    else if (theApp.m_general_setting_data.lyric_download_service == GeneralSettingData::LDS_QQMUSIC)
     {
         return CCommon::ASCIIToUnicode(song_id_qq_music);
     }
@@ -227,7 +231,12 @@ void SongInfo::SetYear(const wchar_t* str_year)
 
 void SongInfo::SetSongId(const wstring& id)
 {
-    if (theApp.m_general_setting_data.lyric_download_service == GeneralSettingData::LDS_QQMUSIC)
+    if (theApp.m_general_setting_data.lyric_download_service == GeneralSettingData::LDS_KUGOU)
+    {
+        std::string song_id = CCommon::UnicodeToAscii(id);
+        CCommon::StringCopy(song_id_kugou, _countof(song_id_kugou), song_id);
+    }
+    else if (theApp.m_general_setting_data.lyric_download_service == GeneralSettingData::LDS_QQMUSIC)
     {
         std::string song_id = CCommon::UnicodeToAscii(id);
         CCommon::StringCopy(song_id_qq_music, _countof(song_id_qq_music), song_id);

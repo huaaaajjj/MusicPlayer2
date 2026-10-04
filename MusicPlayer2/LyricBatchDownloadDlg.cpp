@@ -35,7 +35,9 @@ CString CLyricBatchDownloadDlg::GetDialogName() const
 bool CLyricBatchDownloadDlg::InitializeControls()
 {
     wstring temp;
-    if (theApp.m_general_setting_data.lyric_download_service == GeneralSettingData::LDS_QQMUSIC)
+    if (theApp.m_general_setting_data.lyric_download_service == GeneralSettingData::LDS_KUGOU)
+        temp = theApp.m_str_table.LoadText(L"TITLE_LYRIC_BDL_KUGOU");
+    else if (theApp.m_general_setting_data.lyric_download_service == GeneralSettingData::LDS_QQMUSIC)
         temp = theApp.m_str_table.LoadText(L"TITLE_LYRIC_BDL_QQMUSIC");
     else
         temp = theApp.m_str_table.LoadText(L"TITLE_LYRIC_BDL");
@@ -63,12 +65,6 @@ bool CLyricBatchDownloadDlg::InitializeControls()
     SetDlgItemTextW(IDC_INFO_STATIC, temp.c_str());
     temp = theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_DL_START");
     SetDlgItemTextW(IDC_START_DOWNLOAD, temp.c_str());
-    temp = theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_EMBED_START");
-    SetDlgItemTextW(IDC_LYRIC_BDL_EMBED, temp.c_str());
-    temp = theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_COVER_START");
-    SetDlgItemTextW(IDC_LYRIC_BDL_COVER, temp.c_str());
-    temp = theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_EMBED_COVER_START");
-    SetDlgItemTextW(IDC_LYRIC_BDL_EMBED_COVER, temp.c_str());
     // IDCANCEL
 
     RepositionTextBasedControls({
@@ -107,10 +103,8 @@ void CLyricBatchDownloadDlg::EnableControls(bool enable)
         GetDlgItem(IDC_SAVE_TO_LYRIC_FOLDER)->EnableWindow(FALSE);
     else
         GetDlgItem(IDC_SAVE_TO_LYRIC_FOLDER)->EnableWindow(enable);
+    GetDlgItem(IDC_BATCH_ACTION_TAB)->EnableWindow(enable);
     GetDlgItem(IDC_START_DOWNLOAD)->EnableWindow(enable);
-    GetDlgItem(IDC_LYRIC_BDL_EMBED)->EnableWindow(enable);
-    GetDlgItem(IDC_LYRIC_BDL_COVER)->EnableWindow(enable);
-    GetDlgItem(IDC_LYRIC_BDL_EMBED_COVER)->EnableWindow(enable);
 }
 
 bool CLyricBatchDownloadDlg::SaveLyric(const wchar_t* path, const wstring& lyric_wcs, CodeType code_type, bool* char_cannot_convert)
@@ -137,6 +131,7 @@ void CLyricBatchDownloadDlg::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CLyricBatchDownloadDlg, CBaseDialog)
     ON_BN_CLICKED(IDC_START_DOWNLOAD, &CLyricBatchDownloadDlg::OnBnClickedStartDownload)
+    ON_NOTIFY(TCN_SELCHANGE, IDC_BATCH_ACTION_TAB, &CLyricBatchDownloadDlg::OnTcnSelchangeActionTab)
     ON_BN_CLICKED(IDC_LYRIC_BDL_EMBED, &CLyricBatchDownloadDlg::OnBnClickedEmbedLyric)
     ON_BN_CLICKED(IDC_LYRIC_BDL_COVER, &CLyricBatchDownloadDlg::OnBnClickedDownloadCover)
     ON_BN_CLICKED(IDC_LYRIC_BDL_EMBED_COVER, &CLyricBatchDownloadDlg::OnBnClickedEmbedCover)
@@ -164,6 +159,16 @@ BOOL CLyricBatchDownloadDlg::OnInitDialog()
     SetButtonIcon(IDC_START_DOWNLOAD, IconMgr::IconType::IT_Download_Batch);
 
     CenterWindow();
+
+    if (CTabCtrl* action_tab = (CTabCtrl*)GetDlgItem(IDC_BATCH_ACTION_TAB))
+    {
+        action_tab->InsertItem(0, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_DL_START").c_str());
+        action_tab->InsertItem(1, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_EMBED_START").c_str());
+        action_tab->InsertItem(2, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_COVER_START").c_str());
+        action_tab->InsertItem(3, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_EMBED_COVER_START").c_str());
+        action_tab->SetCurSel(0);
+    }
+    UpdateActionTab();
 
     LoadConfig();
 
@@ -229,7 +234,7 @@ BOOL CLyricBatchDownloadDlg::OnInitDialog()
 
 void CLyricBatchDownloadDlg::OnBnClickedStartDownload()
 {
-    StartAction(BatchAction::DownloadLyric);
+    StartAction(GetCurrentAction());
 }
 
 
@@ -248,6 +253,43 @@ void CLyricBatchDownloadDlg::OnBnClickedDownloadCover()
 void CLyricBatchDownloadDlg::OnBnClickedEmbedCover()
 {
     StartAction(BatchAction::EmbedCover);
+}
+
+
+CLyricBatchDownloadDlg::BatchAction CLyricBatchDownloadDlg::GetCurrentAction()
+{
+    const int selected = (GetDlgItem(IDC_BATCH_ACTION_TAB) != nullptr)
+        ? static_cast<CTabCtrl*>(GetDlgItem(IDC_BATCH_ACTION_TAB))->GetCurSel()
+        : 0;
+    switch (selected)
+    {
+    case 1: return BatchAction::EmbedLyric;
+    case 2: return BatchAction::DownloadCover;
+    case 3: return BatchAction::EmbedCover;
+    default: return BatchAction::DownloadLyric;
+    }
+}
+
+
+void CLyricBatchDownloadDlg::UpdateActionTab()
+{
+    m_current_action = GetCurrentAction();
+    const wchar_t* text_key = L"TXT_LYRIC_BDL_DL_START";
+    switch (m_current_action)
+    {
+    case BatchAction::EmbedLyric: text_key = L"TXT_LYRIC_BDL_EMBED_START"; break;
+    case BatchAction::DownloadCover: text_key = L"TXT_LYRIC_BDL_COVER_START"; break;
+    case BatchAction::EmbedCover: text_key = L"TXT_LYRIC_BDL_EMBED_COVER_START"; break;
+    default: break;
+    }
+    SetDlgItemTextW(IDC_START_DOWNLOAD, theApp.m_str_table.LoadText(text_key).c_str());
+}
+
+
+void CLyricBatchDownloadDlg::OnTcnSelchangeActionTab(NMHDR* pNMHDR, LRESULT* pResult)
+{
+    UpdateActionTab();
+    *pResult = 0;
 }
 
 
@@ -931,30 +973,150 @@ afx_msg LRESULT CLyricBatchDownloadDlg::OnBatchDownloadComplate(WPARAM wParam, L
     if (m_thread_info.action == BatchAction::EmbedLyric)
     {
         FlushPendingEmbeds();
-        SetDlgItemText(IDC_INFO_STATIC, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_INFO_EMBED_COMPLETE").c_str());
         CPlayer::GetInstance().SearchLyrics(true);
         CPlayer::GetInstance().IniLyrics();
     }
     else if (m_thread_info.action == BatchAction::DownloadCover)
     {
-        SetDlgItemText(IDC_INFO_STATIC, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_INFO_COVER_COMPLETE").c_str());
         CPlayer::GetInstance().SearchOutAlbumCover();
         CPlayer::GetInstance().AlbumCoverGaussBlur();
     }
     else if (m_thread_info.action == BatchAction::EmbedCover)
     {
         FlushPendingCoverEmbeds();
-        SetDlgItemText(IDC_INFO_STATIC, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_INFO_COVER_EMBED_COMPLETE").c_str());
         CPlayer::GetInstance().SearchAlbumCover();
         CPlayer::GetInstance().AlbumCoverGaussBlur();
     }
     else
     {
-        SetDlgItemText(IDC_INFO_STATIC, theApp.m_str_table.LoadText(L"TXT_LYRIC_BDL_INFO_COMPLETE").c_str());
         CPlayer::GetInstance().SearchLyrics(true);
         CPlayer::GetInstance().IniLyrics();
     }
+    ShowBatchStatistics(m_thread_info.action);
     return 0;
+}
+
+
+void CLyricBatchDownloadDlg::ShowBatchStatistics(BatchAction action)
+{
+    auto status_is = [](const CString& status, std::initializer_list<const wchar_t*> keys)
+    {
+        for (const wchar_t* key : keys)
+        {
+            if (status == theApp.m_str_table.LoadText(key).c_str())
+                return true;
+        }
+        return false;
+    };
+
+    int succeeded{};
+    int skipped{};
+    int failed{};
+    int pending{};
+    const int total = static_cast<int>(m_playlist.size());
+
+    for (int i{}; i < total; ++i)
+    {
+        const CString status = m_song_list_ctrl.GetItemText(i, 4);
+        if (status.IsEmpty())
+        {
+            ++pending;
+            continue;
+        }
+
+        bool counted = false;
+        switch (action)
+        {
+        case BatchAction::DownloadLyric:
+            if (status_is(status, { L"TXT_LYRIC_BDL_STATUS_SUCCEEDED", L"TXT_LYRIC_BDL_STATUS_ENCODE_WARNING" }))
+            {
+                ++succeeded;
+                counted = true;
+            }
+            else if (status_is(status, { L"TXT_LYRIC_BDL_STATUS_SKIPPED" }))
+            {
+                ++skipped;
+                counted = true;
+            }
+            else if (status_is(status, { L"TXT_LYRIC_BDL_STATUS_NETWORK_FAILED", L"TXT_LYRIC_BDL_STATUS_CANNOT_FIND_THIS_SONG",
+                L"TXT_LYRIC_BDL_STATUS_NO_MATCHED_LYRIC", L"TXT_LYRIC_BDL_STATUS_DOWNLOAD_FAILED",
+                L"TXT_LYRIC_BDL_STATUS_SONG_NO_LYRIC", L"TXT_LYRIC_BDL_STATUS_FILE_WRITE_FAILED" }))
+            {
+                ++failed;
+                counted = true;
+            }
+            break;
+        case BatchAction::EmbedLyric:
+            if (status_is(status, { L"TXT_LYRIC_BDL_STATUS_EMBED_SUCCEEDED" }))
+            {
+                ++succeeded;
+                counted = true;
+            }
+            else if (status_is(status, { L"TXT_LYRIC_BDL_STATUS_EMBED_SKIPPED_EXIST", L"TXT_LYRIC_BDL_STATUS_EMBED_NO_LRC",
+                L"TXT_LYRIC_BDL_STATUS_EMBED_UNSUPPORTED", L"TXT_LYRIC_BDL_STATUS_SKIPPED" }))
+            {
+                ++skipped;
+                counted = true;
+            }
+            else if (status_is(status, { L"TXT_LYRIC_BDL_STATUS_EMBED_FAILED" }))
+            {
+                ++failed;
+                counted = true;
+            }
+            else if (status_is(status, { L"TXT_LYRIC_BDL_STATUS_EMBED_PENDING", L"TXT_LYRIC_BDL_STATUS_EMBED_FILE_LOCKED" }))
+            {
+                ++pending;
+                counted = true;
+            }
+            break;
+        case BatchAction::DownloadCover:
+            if (status_is(status, { L"TXT_LYRIC_BDL_STATUS_COVER_SUCCEEDED" }))
+            {
+                ++succeeded;
+                counted = true;
+            }
+            else if (status_is(status, { L"TXT_LYRIC_BDL_STATUS_COVER_EXIST", L"TXT_LYRIC_BDL_STATUS_SKIPPED" }))
+            {
+                ++skipped;
+                counted = true;
+            }
+            else if (status_is(status, { L"TXT_LYRIC_BDL_STATUS_COVER_FAILED", L"TXT_LYRIC_BDL_STATUS_COVER_NO_MATCH",
+                L"TXT_LYRIC_BDL_STATUS_NETWORK_FAILED" }))
+            {
+                ++failed;
+                counted = true;
+            }
+            break;
+        case BatchAction::EmbedCover:
+            if (status_is(status, { L"TXT_LYRIC_BDL_STATUS_COVER_EMBED_SUCCEEDED" }))
+            {
+                ++succeeded;
+                counted = true;
+            }
+            else if (status_is(status, { L"TXT_LYRIC_BDL_STATUS_COVER_EMBED_UNSUPPORTED", L"TXT_LYRIC_BDL_STATUS_COVER_EMBED_NO_COVER",
+                L"TXT_LYRIC_BDL_STATUS_SKIPPED" }))
+            {
+                ++skipped;
+                counted = true;
+            }
+            else if (status_is(status, { L"TXT_LYRIC_BDL_STATUS_COVER_EMBED_FAILED" }))
+            {
+                ++failed;
+                counted = true;
+            }
+            else if (status_is(status, { L"TXT_LYRIC_BDL_STATUS_COVER_EMBED_PENDING", L"TXT_LYRIC_BDL_STATUS_COVER_EMBED_FILE_LOCKED" }))
+            {
+                ++pending;
+                counted = true;
+            }
+            break;
+        }
+        if (!counted)
+            ++pending;
+    }
+
+    wstring info = theApp.m_str_table.LoadTextFormat(L"TXT_LYRIC_BDL_INFO_STATISTICS", { total, succeeded, skipped, failed, pending });
+    SetDlgItemText(IDC_INFO_STATIC, info.c_str());
 }
 
 

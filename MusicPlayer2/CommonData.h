@@ -303,6 +303,7 @@ struct GeneralSettingData
     {
         LDS_NETEASE,    //网易云音乐
         LDS_QQMUSIC,    //QQ音乐
+        LDS_KUGOU,      //酷狗音乐
     };
     LyricDownloadService lyric_download_service{};
 

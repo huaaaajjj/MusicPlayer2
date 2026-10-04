@@ -56,6 +56,7 @@ struct SongInfo
     wstring album_artist;               // 唱片集艺术家
     unsigned __int64 song_id_netease{}; // 歌曲对应的网易云音乐中的歌曲ID<仅在媒体库内使用>
     char song_id_qq_music[16]{};        // 歌曲对应的QQ音乐中的歌曲ID<仅在媒体库内使用>
+    char song_id_kugou[40]{};           // 歌曲对应的酷狗音乐中的歌曲hash<仅在媒体库内使用>
     __int64 last_played_time{};         // 上次播放的时间<仅在媒体库内使用>
     unsigned __int64 modified_time{};   // 修改时间
     int track{};                        // 音轨序号

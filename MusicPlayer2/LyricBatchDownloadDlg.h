@@ -8,7 +8,7 @@
 #include "BaseDialog.h"
 #include <set>
 
-// CLyricBatchDownloadDlg 对话框
+// CLyricBatchDownloadDlg 批量下载对话框
 
 class CLyricBatchDownloadDlg : public CBaseDialog
 {
@@ -23,7 +23,7 @@ public:
 	enum { IDD = IDD_LYRIC_BATCH_DOWN_DIALOG };
 #endif
 
-#define WM_BATCH_DOWNLOAD_COMPLATE (WM_USER+103)		//歌词批量下载完成消息
+#define WM_BATCH_DOWNLOAD_COMPLATE (WM_USER+103)		//批量下载完成消息
 
 enum class BatchAction
 {
@@ -97,6 +97,7 @@ protected:
     CCriticalSection m_cs;
 
 	bool m_lyric_path_not_exit{ false };
+    BatchAction m_current_action{ BatchAction::DownloadLyric };
 
 	CWinThread* m_pThread{};		//下载歌词的线程
 
@@ -111,11 +112,15 @@ protected:
     void StartAction(BatchAction action);
     void FlushPendingEmbeds();
     void FlushPendingCoverEmbeds();
+    void ShowBatchStatistics(BatchAction action);
+    BatchAction GetCurrentAction();
+    void UpdateActionTab();
 
 	DECLARE_MESSAGE_MAP()
 public:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnBnClickedStartDownload();
+    afx_msg void OnTcnSelchangeActionTab(NMHDR* pNMHDR, LRESULT* pResult);
     afx_msg void OnBnClickedEmbedLyric();
     afx_msg void OnBnClickedDownloadCover();
     afx_msg void OnBnClickedEmbedCover();

@@ -1005,6 +1005,9 @@
     <ClInclude Include="QQMusicLyricDownload.h">
       <Filter>公共的类\LyricDownloadCommon</Filter>
     </ClInclude>
+    <ClInclude Include="KugouLyricDownload.h">
+      <Filter>公共的类\LyricDownloadCommon</Filter>
+    </ClInclude>
     <ClInclude Include="SongInfo.h">
       <Filter>公共的类\SongInfo</Filter>
     </ClInclude>
@@ -1734,6 +1737,9 @@
       <Filter>公共的类\LyricDownloadCommon</Filter>
     </ClCompile>
     <ClCompile Include="QQMusicLyricDownload.cpp">
+      <Filter>公共的类\LyricDownloadCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="KugouLyricDownload.cpp">
       <Filter>公共的类\LyricDownloadCommon</Filter>
     </ClCompile>
     <ClCompile Include="SongInfo.cpp">

@@ -2,6 +2,19 @@
 
 # MusicPlayer2 Update log
 
+## V2.79 (2026-10-04)
+
+**New Features:**
+
+- Added AI Song Organize, which analyzes and corrects song metadata from file names and existing tags, with lyrics and album-cover download/embedding support.
+- Added Kugou Music as a lyrics and album cover download service.
+- Renamed "Lyrics Batch Download" to "Batch Download", using tabs for lyrics/album-cover download and embedding, with operation statistics.
+- Batch operations can now embed album covers into audio files.
+
+**Bug Fixes:**
+
+- Fixed the QQ Music download service option not being selected correctly in the new settings panel.
+
 ## V2.78 (2025/12/27)
 
 **New Features:**

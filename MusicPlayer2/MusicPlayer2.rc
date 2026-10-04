@@ -520,8 +520,9 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,264,289,10
     LTEXT           "Lyrics and album cover download service:",IDC_TXT_OPT_LYRICS_AND_COVER_DL_SERVICE_STATIC,14,222,289,8
     CONTROL         "NetEase cloud music",IDC_NETEASE_CLOUD_MUSIC_RADIO,
-                    "Button",BS_AUTORADIOBUTTON | WS_GROUP,21,233,119,8
-    CONTROL         "QQ music",IDC_QQ_MUSIC_RADIO,"Button",BS_AUTORADIOBUTTON,150,233,153,8
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP,21,233,115,8
+    CONTROL         "QQ music",IDC_QQ_MUSIC_RADIO,"Button",BS_AUTORADIOBUTTON,140,233,78,8
+    CONTROL         "Kugou Music",IDC_KUGOU_MUSIC_RADIO,"Button",BS_AUTORADIOBUTTON,222,233,81,8
 END
 
 IDD_EQUALIZER_DIALOG DIALOGEX 0, 0, 299, 107
@@ -635,10 +636,10 @@ BEGIN
     PUSHBUTTON      "Set",IDC_SET_BUTTON,260,168,50,14
 END
 
-IDD_LYRIC_BATCH_DOWN_DIALOG DIALOGEX 0, 0, 460, 234
+IDD_LYRIC_BATCH_DOWN_DIALOG DIALOGEX 0, 0, 460, 278
 STYLE DS_SETFONT | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 EXSTYLE WS_EX_APPWINDOW
-CAPTION "Lyrics batch download (From NetEase cloud music)"
+CAPTION "Batch download (From NetEase cloud music)"
 FONT 9, "微软雅黑", 400, 0, 0x0
 BEGIN
     GROUPBOX        "Download Options",IDC_TXT_LYRIC_BDL_DL_OPT_STATIC,7,7,446,62
@@ -653,15 +654,13 @@ BEGIN
                     "Button",BS_AUTORADIOBUTTON,21,55,129,8
     CONTROL         "Save to the same directory as the song",IDC_SAVE_TO_SONG_FOLDER,
                     "Button",BS_AUTORADIOBUTTON,160,55,170,8
-    LTEXT           "Song list:",IDC_TXT_LYRIC_BDL_SONG_LIST_STATIC,7,72,58,8
-    PUSHBUTTON      "Embed lyrics",IDC_LYRIC_BDL_EMBED,70,69,100,14
-    PUSHBUTTON      "Download covers",IDC_LYRIC_BDL_COVER,174,69,100,14
-    PUSHBUTTON      "Embed covers",IDC_LYRIC_BDL_EMBED_COVER,278,69,110,14
-    CONTROL         "",IDC_SONG_LIST1,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,7,83,446,126
-    LTEXT           "progressbar",IDC_PROGRESS_BAR,7,216,40,8
-    LTEXT           "Downloading, <%1%>% completed, please wait...",IDC_INFO_STATIC,50,216,293,8,SS_ENDELLIPSIS
-    DEFPUSHBUTTON   "Start download",IDC_START_DOWNLOAD,349,213,50,14
-    PUSHBUTTON      "Close",IDCANCEL,403,213,50,14
+    CONTROL         "",IDC_BATCH_ACTION_TAB,"SysTabControl32",TCS_TABS | WS_TABSTOP,7,72,446,78
+    PUSHBUTTON      "Start",IDC_START_DOWNLOAD,347,112,100,20
+    LTEXT           "Song list:",IDC_TXT_LYRIC_BDL_SONG_LIST_STATIC,7,155,58,8
+    CONTROL         "",IDC_SONG_LIST1,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,7,165,446,80
+    LTEXT           "progressbar",IDC_PROGRESS_BAR,7,252,40,8
+    LTEXT           "Downloading, <%1%>% completed, please wait...",IDC_INFO_STATIC,50,252,348,8,SS_ENDELLIPSIS
+    PUSHBUTTON      "Close",IDCANCEL,403,252,50,14
 END
 
 IDD_AI_ORGANIZE_DIALOG DIALOGEX 0, 0, 420, 232
@@ -3294,8 +3293,8 @@ IDI_DELETE_D            ICON                    "res\\delete_d.ico"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,7,8,0
- PRODUCTVERSION 2,7,8,0
+ FILEVERSION 2,7,9,0
+ PRODUCTVERSION 2,7,9,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -3312,12 +3311,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "By ZhongYang"
             VALUE "FileDescription", "MusicPlayer2"
-            VALUE "FileVersion", "2.7.8.0"
+            VALUE "FileVersion", "2.7.9.0"
             VALUE "InternalName", "MusicPlayer2.exe"
             VALUE "LegalCopyright", "By ZhongYang. All rights reserved."
             VALUE "OriginalFilename", "MusicPlayer2.exe"
             VALUE "ProductName", "MusicPlayer2"
-            VALUE "ProductVersion", "2.7.8.0"
+            VALUE "ProductVersion", "2.7.9.0"
         END
     END
     BLOCK "VarFileInfo"

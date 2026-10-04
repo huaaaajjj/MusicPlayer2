@@ -174,9 +174,10 @@
                   </verticalLayout>
                 </horizontalLayout>
               </rectangle>
-              <verticalLayout id="onlineServiceOptionGroup" margin-left="52" margin-right="16" height="72">
+              <verticalLayout id="onlineServiceOptionGroup" margin-left="52" margin-right="16" height="96">
                 <radioButton id="onlineServiceNetEaseBtn" text="%(TXT_OPT_DATA_NETEASE_CLOUD_MUSIC)" group="2"/>
                 <radioButton id="onlineServiceQQMusicBtn" text="%(TXT_OPT_DATA_QQ_MUSIC)" group="2"/>
+                <radioButton id="onlineServiceKugouBtn" text="%(TXT_OPT_DATA_KUGOU_MUSIC)" group="2"/>
               </verticalLayout>
 
             </verticalLayout>

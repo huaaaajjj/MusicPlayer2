@@ -52,4 +52,5 @@ public:
     afx_msg void OnBnClickedOpenConfigPathButton();
     afx_msg void OnBnClickedNeteaseCloudMusicRadio();
     afx_msg void OnBnClickedQqMusicRadio();
+    afx_msg void OnBnClickedKugouMusicRadio();
 };

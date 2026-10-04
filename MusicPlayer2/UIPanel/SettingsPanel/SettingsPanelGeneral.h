@@ -27,6 +27,7 @@ private:
     UiElement::Text* config_file_dir_text{};
     UiElement::RadioButton* online_service_netease_btn{};
     UiElement::RadioButton* online_service_qqmusic_btn{};
+    UiElement::RadioButton* online_service_kugou_btn{};
     UiElement::ComboBox* language_combobox{};
 };
 

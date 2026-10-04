@@ -47,8 +47,12 @@ void CSettingsPanelGeneral::Init()
     online_service_netease_btn->SetClickedTrigger([&](UiElement::AbstractToggleButton* sender) {
         OnOnlineServiceRadioBtnClicked(sender);
     });
-    online_service_qqmusic_btn = m_root_element->FindElement<UiElement::RadioButton>("onlineServiceNetEaseBtn");
+    online_service_qqmusic_btn = m_root_element->FindElement<UiElement::RadioButton>("onlineServiceQQMusicBtn");
     online_service_qqmusic_btn->SetClickedTrigger([&](UiElement::AbstractToggleButton* sender) {
+        OnOnlineServiceRadioBtnClicked(sender);
+    });
+    online_service_kugou_btn = m_root_element->FindElement<UiElement::RadioButton>("onlineServiceKugouBtn");
+    online_service_kugou_btn->SetClickedTrigger([&](UiElement::AbstractToggleButton* sender) {
         OnOnlineServiceRadioBtnClicked(sender);
     });
 
@@ -75,10 +79,12 @@ void CSettingsPanelGeneral::SettingDataToUi()
     language_combobox->SetCurSel(language_sel);
 
 
-    if (m_data.lyric_download_service == GeneralSettingData::LDS_NETEASE)
-        online_service_netease_btn->SetChecked(true);
-    else
+    if (m_data.lyric_download_service == GeneralSettingData::LDS_KUGOU)
+        online_service_kugou_btn->SetChecked(true);
+    else if (m_data.lyric_download_service == GeneralSettingData::LDS_QQMUSIC)
         online_service_qqmusic_btn->SetChecked(true);
+    else
+        online_service_netease_btn->SetChecked(true);
     config_file_dir_text->SetText(theApp.m_appdata_dir);
 }
 
@@ -98,6 +104,10 @@ void CSettingsPanelGeneral::OnOnlineServiceRadioBtnClicked(UiElement::AbstractTo
     else if (sender == online_service_qqmusic_btn)
     {
         m_data.lyric_download_service = GeneralSettingData::LDS_QQMUSIC;
+    }
+    else if (sender == online_service_kugou_btn)
+    {
+        m_data.lyric_download_service = GeneralSettingData::LDS_KUGOU;
     }
     OnSettingsChanged();
 }

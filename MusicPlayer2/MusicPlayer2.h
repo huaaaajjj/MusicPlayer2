@@ -76,7 +76,7 @@ public:
     wstring m_window_title;         // 窗口的标题
 
     volatile bool m_lyric_download_dialog_exit{ true };		//用于指示歌词下载对话框已经退出
-    volatile bool m_batch_download_dialog_exit{ true };		//用于指示歌词批量下载对话框已经退出
+    volatile bool m_batch_download_dialog_exit{ true };		//用于指示批量下载对话框已经退出
     volatile bool m_cover_download_dialog_exit{ true };		//用于指示歌词下载对话框已经退出
     volatile bool m_format_convert_dialog_exit{ true };		//用于指示格式对话框已经退出
     volatile bool m_ai_organize_dialog_exit{ true };		//用于指示AI自动整理对话框已经退出
